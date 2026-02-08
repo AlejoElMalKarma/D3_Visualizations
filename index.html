@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Línea de Tiempo - Ventas, Costos y Margen</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0f0f1a;
+      color: #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 30px 20px;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 300;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      color: #ffffff;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 28px;
+      letter-spacing: 1px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn {
+      padding: 10px 28px;
+      border: 1px solid #333;
+      border-radius: 30px;
+      background: transparent;
+      color: #aaa;
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      text-transform: uppercase;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn:hover {
+      color: #fff;
+      border-color: #555;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .btn.active-ventas {
+      color: #00e5a0;
+      border-color: #00e5a0;
+      background: rgba(0, 229, 160, 0.08);
+      box-shadow: 0 0 20px rgba(0, 229, 160, 0.15);
+    }
+
+    .btn.active-costos {
+      color: #ff6b6b;
+      border-color: #ff6b6b;
+      background: rgba(255, 107, 107, 0.08);
+      box-shadow: 0 0 20px rgba(255, 107, 107, 0.15);
+    }
+
+    .btn.active-margen {
+      color: #4dabf7;
+      border-color: #4dabf7;
+      background: rgba(77, 171, 247, 0.08);
+      box-shadow: 0 0 20px rgba(77, 171, 247, 0.15);
+    }
+
+    .chart-container {
+      background: #16162a;
+      border-radius: 16px;
+      padding: 30px 20px 20px 20px;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+      border: 1px solid #1e1e3a;
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .chart-title {
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 400;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+      transition: color 0.5s ease;
+    }
+
+    .chart-title.color-ventas { color: #00e5a0; }
+    .chart-title.color-costos { color: #ff6b6b; }
+    .chart-title.color-margen { color: #4dabf7; }
+
+    svg {
+      display: block;
+      overflow: visible;
+    }
+
+    .grid line {
+      stroke: #1e1e3a;
+      stroke-dasharray: 3 3;
+    }
+
+    .grid path {
+      stroke: none;
+    }
+
+    .axis path,
+    .axis line {
+      stroke: #2a2a4a;
+    }
+
+    .axis text {
+      fill: #666;
+      font-size: 11px;
+    }
+
+    .tooltip {
+      position: absolute;
+      padding: 10px 16px;
+      background: rgba(20, 20, 40, 0.95);
+      border: 1px solid #333;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      backdrop-filter: blur(10px);
+      z-index: 10;
+    }
+
+    .tooltip .label {
+      color: #888;
+      margin-bottom: 4px;
+    }
+
+    .tooltip .value {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      max-width: 1000px;
+      height: 3px;
+      background: #1e1e3a;
+      border-radius: 2px;
+      margin-top: 16px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      border-radius: 2px;
+      transition: width 0.1s linear, background-color 0.5s ease;
+    }
+
+    .progress-bar.bar-ventas { background: #00e5a0; }
+    .progress-bar.bar-costos { background: #ff6b6b; }
+    .progress-bar.bar-margen { background: #4dabf7; }
+
+    .timer-label {
+      font-size: 0.7rem;
+      color: #555;
+      margin-top: 6px;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Dashboard Financiero</h1>
+  <p class="subtitle">Línea de tiempo — Ene 2024 a Dic 2025</p>
+
+  <div class="controls">
+    <button class="btn" data-metric="ventas" onclick="switchMetric('ventas')">Ventas</button>
+    <button class="btn" data-metric="costos" onclick="switchMetric('costos')">Costos</button>
+    <button class="btn" data-metric="margen" onclick="switchMetric('margen')">Margen de Utilidad</button>
+  </div>
+
+  <div class="chart-container">
+    <div class="chart-title" id="chartTitle">Ventas Mensuales</div>
+    <div id="chart"></div>
+  </div>
+
+  <div class="progress-bar-container">
+    <div class="progress-bar bar-ventas" id="progressBar"></div>
+  </div>
+  <div class="timer-label">Cambio automático cada 10 s</div>
+
+  <div class="tooltip" id="tooltip">
+    <div class="label" id="tooltipLabel"></div>
+    <div class="value" id="tooltipValue"></div>
+  </div>
+
+  <script>
+    // ── Data generation ──────────────────────────────────────────────
+    const months = [];
+    for (let y = 2024; y <= 2025; y++) {
+      for (let m = 0; m < 12; m++) {
+        months.push(new Date(y, m, 1));
+      }
+    }
+
+    // Fictitious but realistic monthly data
+    const ventasBase = [
+      120, 135, 142, 155, 148, 170, 185, 178, 190, 210, 240, 260,
+      230, 245, 265, 280, 270, 295, 320, 310, 335, 360, 390, 420
+    ];
+    const costosBase = [
+      85, 92, 95, 100, 98, 108, 115, 112, 118, 128, 142, 150,
+      140, 148, 155, 162, 158, 170, 180, 176, 188, 200, 212, 225
+    ];
+
+    const data = months.map((date, i) => {
+      const ventas = ventasBase[i] * 1000;
+      const costos = costosBase[i] * 1000;
+      const margen = ((ventas - costos) / ventas) * 100;
+      return { date, ventas, costos, margen: +margen.toFixed(1) };
+    });
+
+    // ── Chart dimensions ─────────────────────────────────────────────
+    const containerWidth = document.getElementById('chart').getBoundingClientRect().width || 940;
+    const margin = { top: 20, right: 30, bottom: 50, left: 70 };
+    const width = Math.min(containerWidth, 940) - margin.left - margin.right;
+    const height = 420 - margin.top - margin.bottom;
+
+    const svg = d3.select('#chart')
+      .append('svg')
+      .attr('viewBox', `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+      .attr('preserveAspectRatio', 'xMidYMid meet')
+      .append('g')
+      .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    // ── Scales ───────────────────────────────────────────────────────
+    const x = d3.scaleTime()
+      .domain(d3.extent(data, d => d.date))
+      .range([0, width]);
+
+    const y = d3.scaleLinear().range([height, 0]);
+
+    // ── Grid ─────────────────────────────────────────────────────────
+    const gridGroup = svg.append('g').attr('class', 'grid');
+
+    function updateGrid() {
+      gridGroup.selectAll('*').remove();
+      gridGroup.call(
+        d3.axisLeft(y)
+          .tickSize(-width)
+          .tickFormat('')
+          .ticks(6)
+      );
+    }
+
+    // ── Axes ─────────────────────────────────────────────────────────
+    const xAxisGroup = svg.append('g')
+      .attr('class', 'axis')
+      .attr('transform', `translate(0,${height})`);
+
+    const yAxisGroup = svg.append('g')
+      .attr('class', 'axis');
+
+    const xAxis = d3.axisBottom(x)
+      .ticks(d3.timeMonth.every(2))
+      .tickFormat(d3.timeFormat('%b %Y'));
+
+    // ── Gradient definitions ─────────────────────────────────────────
+    const defs = svg.append('defs');
+
+    const gradients = {
+      ventas: { color: '#00e5a0', colorEnd: 'rgba(0,229,160,0)' },
+      costos: { color: '#ff6b6b', colorEnd: 'rgba(255,107,107,0)' },
+      margen: { color: '#4dabf7', colorEnd: 'rgba(77,171,247,0)' }
+    };
+
+    Object.entries(gradients).forEach(([key, val]) => {
+      const grad = defs.append('linearGradient')
+        .attr('id', `gradient-${key}`)
+        .attr('x1', '0%').attr('y1', '0%')
+        .attr('x2', '0%').attr('y2', '100%');
+      grad.append('stop').attr('offset', '0%').attr('stop-color', val.color).attr('stop-opacity', 0.25);
+      grad.append('stop').attr('offset', '100%').attr('stop-color', val.colorEnd).attr('stop-opacity', 0);
+    });
+
+    // ── Line & area generators ───────────────────────────────────────
+    const lineGen = d3.line()
+      .x(d => x(d.date))
+      .curve(d3.curveCatmullRom.alpha(0.5));
+
+    const areaGen = d3.area()
+      .x(d => x(d.date))
+      .y0(height)
+      .curve(d3.curveCatmullRom.alpha(0.5));
+
+    // ── Path elements ────────────────────────────────────────────────
+    const areaPath = svg.append('path')
+      .attr('class', 'area-path')
+      .attr('fill', `url(#gradient-ventas)`)
+      .attr('opacity', 0);
+
+    const linePath = svg.append('path')
+      .attr('class', 'line-path')
+      .attr('fill', 'none')
+      .attr('stroke-width', 2.5)
+      .attr('stroke-linecap', 'round')
+      .attr('stroke-linejoin', 'round');
+
+    // ── Dots ─────────────────────────────────────────────────────────
+    const dotsGroup = svg.append('g').attr('class', 'dots');
+
+    // ── Hover overlay ────────────────────────────────────────────────
+    const hoverLine = svg.append('line')
+      .attr('class', 'hover-line')
+      .attr('y1', 0)
+      .attr('y2', height)
+      .attr('stroke', '#444')
+      .attr('stroke-width', 1)
+      .attr('stroke-dasharray', '4 4')
+      .attr('opacity', 0);
+
+    const overlay = svg.append('rect')
+      .attr('width', width)
+      .attr('height', height)
+      .attr('fill', 'transparent')
+      .attr('cursor', 'crosshair');
+
+    // ── Tooltip logic ────────────────────────────────────────────────
+    const tooltip = d3.select('#tooltip');
+    const tooltipLabel = d3.select('#tooltipLabel');
+    const tooltipValue = d3.select('#tooltipValue');
+    const bisect = d3.bisector(d => d.date).left;
+
+    const metricLabels = {
+      ventas: 'Ventas Mensuales',
+      costos: 'Costos Mensuales',
+      margen: 'Margen de Utilidad'
+    };
+
+    const metricColors = {
+      ventas: '#00e5a0',
+      costos: '#ff6b6b',
+      margen: '#4dabf7'
+    };
+
+    const formatValue = {
+      ventas: v => `$${(v / 1000).toLocaleString('es')}K`,
+      costos: v => `$${(v / 1000).toLocaleString('es')}K`,
+      margen: v => `${v.toFixed(1)}%`
+    };
+
+    overlay.on('mousemove', function (event) {
+      const [mx] = d3.pointer(event);
+      const date = x.invert(mx);
+      const idx = bisect(data, date);
+      const d0 = data[Math.max(0, idx - 1)];
+      const d1 = data[Math.min(data.length - 1, idx)];
+      const d = (date - d0.date > d1.date - date) ? d1 : d0;
+
+      hoverLine
+        .attr('x1', x(d.date))
+        .attr('x2', x(d.date))
+        .attr('opacity', 1);
+
+      dotsGroup.selectAll('circle')
+        .attr('r', c => c.date === d.date ? 6 : 3.5)
+        .attr('opacity', c => c.date === d.date ? 1 : 0.6);
+
+      const monthFormat = d3.timeFormat('%B %Y');
+      tooltipLabel.text(monthFormat(d.date));
+      tooltipValue
+        .text(formatValue[currentMetric](d[currentMetric]))
+        .style('color', metricColors[currentMetric]);
+
+      const tooltipNode = tooltip.node();
+      const chartRect = document.getElementById('chart').getBoundingClientRect();
+      let tx = chartRect.left + margin.left + x(d.date) + 15;
+      let ty = chartRect.top + margin.top + y(d[currentMetric]) - 20 + window.scrollY;
+
+      if (tx + tooltipNode.offsetWidth > window.innerWidth - 20) {
+        tx = chartRect.left + margin.left + x(d.date) - tooltipNode.offsetWidth - 15;
+      }
+
+      tooltip
+        .style('left', tx + 'px')
+        .style('top', ty + 'px')
+        .style('opacity', 1);
+    });
+
+    overlay.on('mouseleave', function () {
+      hoverLine.attr('opacity', 0);
+      tooltip.style('opacity', 0);
+      dotsGroup.selectAll('circle').attr('r', 3.5).attr('opacity', 0.6);
+    });
+
+    // ── Metric state ─────────────────────────────────────────────────
+    let currentMetric = 'ventas';
+    const metricOrder = ['ventas', 'costos', 'margen'];
+    let autoTimer = null;
+    let progressInterval = null;
+    let progressValue = 0;
+
+    // ── Render / Transition ──────────────────────────────────────────
+    function renderMetric(metric, animate = true) {
+      currentMetric = metric;
+      const dur = animate ? 800 : 0;
+      const color = metricColors[metric];
+
+      // Update y domain
+      if (metric === 'margen') {
+        const ext = d3.extent(data, d => d.margen);
+        y.domain([Math.floor(ext[0] - 3), Math.ceil(ext[1] + 3)]);
+      } else {
+        const maxVal = d3.max(data, d => d[metric]);
+        y.domain([0, maxVal * 1.12]);
+      }
+
+      // Update axes
+      xAxisGroup.transition().duration(dur).call(xAxis)
+        .selectAll('text')
+        .attr('transform', 'rotate(-35)')
+        .style('text-anchor', 'end');
+
+      const yTickFormat = metric === 'margen'
+        ? d => `${d}%`
+        : d => `$${d / 1000}K`;
+
+      yAxisGroup.transition().duration(dur)
+        .call(d3.axisLeft(y).ticks(6).tickFormat(yTickFormat));
+
+      updateGrid();
+
+      // Update line
+      lineGen.y(d => y(d[metric]));
+      areaGen.y1(d => y(d[metric]));
+
+      linePath
+        .datum(data)
+        .transition()
+        .duration(dur)
+        .ease(d3.easeCubicInOut)
+        .attr('d', lineGen)
+        .attr('stroke', color);
+
+      // Update area
+      areaPath
+        .datum(data)
+        .transition()
+        .duration(dur)
+        .ease(d3.easeCubicInOut)
+        .attr('d', areaGen)
+        .attr('fill', `url(#gradient-${metric})`)
+        .attr('opacity', 1);
+
+      // Update dots
+      const dots = dotsGroup.selectAll('circle').data(data, d => d.date);
+
+      dots.enter()
+        .append('circle')
+        .attr('cx', d => x(d.date))
+        .attr('cy', d => y(d[metric]))
+        .attr('r', 3.5)
+        .attr('fill', color)
+        .attr('opacity', 0.6)
+        .attr('stroke', '#0f0f1a')
+        .attr('stroke-width', 1.5)
+        .merge(dots)
+        .transition()
+        .duration(dur)
+        .ease(d3.easeCubicInOut)
+        .attr('cy', d => y(d[metric]))
+        .attr('fill', color);
+
+      // Update title
+      const chartTitle = document.getElementById('chartTitle');
+      chartTitle.textContent = metricLabels[metric];
+      chartTitle.className = `chart-title color-${metric}`;
+
+      // Update buttons
+      document.querySelectorAll('.btn').forEach(btn => {
+        btn.className = 'btn';
+        if (btn.dataset.metric === metric) {
+          btn.classList.add(`active-${metric}`);
+        }
+      });
+
+      // Update progress bar color
+      const bar = document.getElementById('progressBar');
+      bar.className = `progress-bar bar-${metric}`;
+    }
+
+    // ── Auto-rotation ────────────────────────────────────────────────
+    function startAutoRotation() {
+      stopAutoRotation();
+      progressValue = 0;
+      const bar = document.getElementById('progressBar');
+
+      progressInterval = setInterval(() => {
+        progressValue += 100 / (10000 / 50);
+        bar.style.width = Math.min(progressValue, 100) + '%';
+      }, 50);
+
+      autoTimer = setTimeout(() => {
+        const idx = metricOrder.indexOf(currentMetric);
+        const next = metricOrder[(idx + 1) % metricOrder.length];
+        renderMetric(next);
+        startAutoRotation();
+      }, 10000);
+    }
+
+    function stopAutoRotation() {
+      clearTimeout(autoTimer);
+      clearInterval(progressInterval);
+      progressValue = 0;
+    }
+
+    function switchMetric(metric) {
+      stopAutoRotation();
+      renderMetric(metric);
+      startAutoRotation();
+    }
+
+    // ── Init ─────────────────────────────────────────────────────────
+    renderMetric('ventas', false);
+    startAutoRotation();
+  </script>
+</body>
+</html>
