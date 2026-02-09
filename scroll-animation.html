@@ -10,9 +10,7 @@
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    html {
-      scroll-behavior: smooth;
-    }
+    html { scroll-behavior: smooth; }
 
     body {
       font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
@@ -21,11 +19,8 @@
       overflow-x: hidden;
     }
 
-    .scroll-container {
-      position: relative;
-    }
+    .scroll-container { position: relative; }
 
-    /* ── Sticky canvas for the ball & charts ── */
     .sticky-wrapper {
       position: sticky;
       top: 0;
@@ -38,9 +33,7 @@
       pointer-events: none;
     }
 
-    .sticky-wrapper > * {
-      pointer-events: auto;
-    }
+    .sticky-wrapper > * { pointer-events: auto; }
 
     #viz-container {
       width: 90%;
@@ -49,9 +42,8 @@
       position: relative;
     }
 
-    /* ── Scroll spacer sections ── */
     .scroll-spacer {
-      height: 150vh;
+      height: 160vh;
       position: relative;
       z-index: 1;
     }
@@ -61,7 +53,7 @@
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
-      top: 10vh;
+      top: 8vh;
       text-align: center;
       opacity: 0;
       transition: opacity 0.6s ease;
@@ -69,9 +61,7 @@
       z-index: 20;
     }
 
-    .section-label.visible {
-      opacity: 1;
-    }
+    .section-label.visible { opacity: 1; }
 
     .section-label h2 {
       font-size: 2.2rem;
@@ -81,19 +71,20 @@
       letter-spacing: -0.5px;
     }
 
-    .section-label h2 .highlight {
-      color: #f5c518;
-    }
+    .section-label h2 .highlight { color: #f5c518; }
 
     .section-label p {
       font-size: 1rem;
       color: #666;
       font-weight: 300;
-      max-width: 500px;
+      max-width: 520px;
       margin: 0 auto;
+      line-height: 1.5;
     }
 
-    /* ── Hero section ── */
+    .section-label p .yellow { color: #f5c518; font-weight: 600; }
+
+    /* ── Hero ── */
     .hero {
       height: 100vh;
       display: flex;
@@ -112,15 +103,9 @@
       margin-bottom: 12px;
     }
 
-    .hero h1 .dot {
-      color: #f5c518;
-    }
+    .hero h1 .dot { color: #f5c518; }
 
-    .hero p {
-      font-size: 1.1rem;
-      color: #666;
-      font-weight: 300;
-    }
+    .hero p { font-size: 1.1rem; color: #666; font-weight: 300; }
 
     .hero .scroll-hint {
       position: absolute;
@@ -148,28 +133,21 @@
     /* ── Tooltip ── */
     .tooltip {
       position: fixed;
-      padding: 10px 16px;
-      background: rgba(20, 20, 20, 0.95);
-      border: 1px solid #333;
-      border-radius: 8px;
-      font-size: 0.8rem;
+      padding: 12px 18px;
+      background: rgba(15, 15, 15, 0.96);
+      border: 1px solid #f5c518;
+      border-radius: 10px;
+      font-size: 0.82rem;
       pointer-events: none;
       opacity: 0;
       transition: opacity 0.15s ease;
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(12px);
       z-index: 100;
+      max-width: 260px;
     }
 
-    .tooltip .t-label {
-      color: #888;
-      margin-bottom: 4px;
-    }
-
-    .tooltip .t-value {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #f5c518;
-    }
+    .tooltip .t-label { color: #888; margin-bottom: 4px; }
+    .tooltip .t-value { font-size: 1rem; font-weight: 600; color: #f5c518; }
 
     /* ── Footer ── */
     .footer {
@@ -182,102 +160,54 @@
       z-index: 5;
     }
 
-    .footer h2 {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #e0e0e0;
-      margin-bottom: 8px;
-    }
-
-    .footer h2 .highlight {
-      color: #f5c518;
-    }
-
-    .footer p {
-      color: #555;
-      font-size: 0.9rem;
-    }
+    .footer h2 { font-size: 2rem; font-weight: 700; color: #e0e0e0; margin-bottom: 8px; }
+    .footer h2 .highlight { color: #f5c518; }
+    .footer p { color: #555; font-size: 0.9rem; }
 
     /* ── Progress bar ── */
     .progress-track {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 3px;
-      background: #1a1a1a;
-      z-index: 50;
+      position: fixed; top: 0; left: 0; width: 100%; height: 3px;
+      background: #1a1a1a; z-index: 50;
     }
 
     .progress-fill {
-      height: 100%;
-      width: 0%;
+      height: 100%; width: 0%;
       background: #f5c518;
       transition: width 0.05s linear;
     }
 
     /* ── Phase indicator ── */
     .phase-indicator {
-      position: fixed;
-      right: 24px;
-      top: 50%;
+      position: fixed; right: 24px; top: 50%;
       transform: translateY(-50%);
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+      display: flex; flex-direction: column; gap: 12px;
       z-index: 50;
     }
 
     .phase-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #222;
-      border: 1.5px solid #444;
-      transition: all 0.4s ease;
-      cursor: pointer;
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #222; border: 1.5px solid #444;
+      transition: all 0.4s ease; cursor: pointer;
     }
 
     .phase-dot.active {
-      background: #f5c518;
-      border-color: #f5c518;
+      background: #f5c518; border-color: #f5c518;
       box-shadow: 0 0 12px rgba(245, 197, 24, 0.4);
     }
 
-    .phase-dot:hover {
-      border-color: #f5c518;
-    }
+    .phase-dot:hover { border-color: #f5c518; }
 
-    /* ── Chart axes styling ── */
-    .axis path,
-    .axis line {
-      stroke: #2a2a2a;
-    }
-
-    .axis text {
-      fill: #555;
-      font-size: 11px;
-      font-family: 'Inter', sans-serif;
-    }
-
-    .grid line {
-      stroke: #1a1a1a;
-      stroke-dasharray: 2 4;
-    }
-
-    .grid path {
-      stroke: none;
-    }
+    /* ── Chart axes ── */
+    .axis path, .axis line { stroke: #2a2a2a; }
+    .axis text { fill: #555; font-size: 11px; font-family: 'Inter', sans-serif; }
+    .grid line { stroke: #1a1a1a; stroke-dasharray: 2 4; }
+    .grid path { stroke: none; }
   </style>
 </head>
 <body>
 
-  <!-- Progress bar -->
-  <div class="progress-track">
-    <div class="progress-fill" id="progressFill"></div>
-  </div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
 
-  <!-- Phase indicator dots -->
   <div class="phase-indicator">
     <div class="phase-dot active" data-phase="0" title="Inicio"></div>
     <div class="phase-dot" data-phase="1" title="Lollipop"></div>
@@ -285,7 +215,6 @@
     <div class="phase-dot" data-phase="3" title="Scatter"></div>
   </div>
 
-  <!-- Hero -->
   <section class="hero">
     <h1>Data in <span class="dot">Motion</span></h1>
     <p>Una bolita. Tres historias. Solo tienes que hacer scroll.</p>
@@ -295,45 +224,38 @@
     </div>
   </section>
 
-  <!-- Scroll container -->
   <div class="scroll-container">
-    <!-- Sticky visualization area -->
     <div class="sticky-wrapper">
       <div id="viz-container"></div>
     </div>
 
-    <!-- Phase 1: Ball -> Lollipop -->
     <div class="scroll-spacer" id="phase1">
       <div class="section-label" id="label1">
         <h2>Ventas por <span class="highlight">Producto</span></h2>
-        <p>La bolita se fragmenta en un lollipop chart mostrando las ventas trimestrales por producto</p>
+        <p>La bolita <span class="yellow">es</span> el Producto C: el que mas vende con <span class="yellow">300K unidades</span>. Los demas aparecen a su alrededor para dar contexto.</p>
       </div>
     </div>
 
-    <!-- Phase 2: Lollipop -> Line + Dots -->
     <div class="scroll-spacer" id="phase2">
       <div class="section-label" id="label2">
         <h2>Tendencia <span class="highlight">Mensual</span></h2>
-        <p>Los puntos se conectan revelando la tendencia de ingresos a lo largo del tiempo</p>
+        <p>La bolita viaja a <span class="yellow">Noviembre</span>, el pico del anio con <span class="yellow">$91K</span> en ingresos. La linea revela el camino que recorrio.</p>
       </div>
     </div>
 
-    <!-- Phase 3: Line -> Scatter -->
     <div class="scroll-spacer" id="phase3">
       <div class="section-label" id="label3">
         <h2>Costo vs <span class="highlight">Beneficio</span></h2>
-        <p>Cada punto encuentra su lugar en el espacio bidimensional de costo y beneficio</p>
+        <p>La bolita aterriza como el <span class="yellow">proyecto estrella</span>: bajo costo, alto beneficio. El punto que todos quieren ser.</p>
       </div>
     </div>
   </div>
 
-  <!-- Footer -->
   <section class="footer">
     <h2>Eso es <span class="highlight">todo</span>.</h2>
     <p>Scroll hacia arriba para verlo de nuevo.</p>
   </section>
 
-  <!-- Tooltip -->
   <div class="tooltip" id="tooltip">
     <div class="t-label" id="tLabel"></div>
     <div class="t-value" id="tValue"></div>
@@ -341,66 +263,75 @@
 
   <script>
   // ═══════════════════════════════════════════════════════════════════
+  // COLORS
+  // ═══════════════════════════════════════════════════════════════════
+  const YELLOW = '#f5c518';
+  const GRAY = '#3a3a3a';
+  const GRAY_LIGHT = '#555';
+  const GRAY_STROKE = '#0a0a0a';
+  const BG = '#0a0a0a';
+
+  // ═══════════════════════════════════════════════════════════════════
   // DATA
   // ═══════════════════════════════════════════════════════════════════
 
-  // Lollipop data: ventas por producto
+  // Lollipop: the ball IS "Producto C" (index with highest value)
+  const HERO_LOLLIPOP = 'Producto C';
   const lollipopData = [
-    { name: 'Producto A', value: 84 },
-    { name: 'Producto B', value: 67 },
-    { name: 'Producto C', value: 95 },
-    { name: 'Producto D', value: 52 },
-    { name: 'Producto E', value: 73 },
-    { name: 'Producto F', value: 41 },
-    { name: 'Producto G', value: 88 },
-    { name: 'Producto H', value: 60 },
+    { name: 'Producto A', value: 210, hero: false },
+    { name: 'Producto B', value: 170, hero: false },
+    { name: 'Producto C', value: 300, hero: true },
+    { name: 'Producto D', value: 130, hero: false },
+    { name: 'Producto E', value: 185, hero: false },
+    { name: 'Producto F', value: 95,  hero: false },
+    { name: 'Producto G', value: 245, hero: false },
+    { name: 'Producto H', value: 155, hero: false },
   ].sort((a, b) => b.value - a.value);
 
-  // Line chart data: ingresos mensuales
+  // Line chart: the ball IS "Nov" (peak month)
+  const HERO_LINE = 'Nov';
   const lineData = [
-    { month: 'Ene', value: 32 },
-    { month: 'Feb', value: 45 },
-    { month: 'Mar', value: 38 },
-    { month: 'Abr', value: 56 },
-    { month: 'May', value: 62 },
-    { month: 'Jun', value: 51 },
-    { month: 'Jul', value: 74 },
-    { month: 'Ago', value: 68 },
-    { month: 'Sep', value: 80 },
-    { month: 'Oct', value: 72 },
-    { month: 'Nov', value: 91 },
-    { month: 'Dic', value: 85 },
+    { month: 'Ene', value: 32, hero: false },
+    { month: 'Feb', value: 45, hero: false },
+    { month: 'Mar', value: 38, hero: false },
+    { month: 'Abr', value: 56, hero: false },
+    { month: 'May', value: 62, hero: false },
+    { month: 'Jun', value: 51, hero: false },
+    { month: 'Jul', value: 74, hero: false },
+    { month: 'Ago', value: 68, hero: false },
+    { month: 'Sep', value: 80, hero: false },
+    { month: 'Oct', value: 72, hero: false },
+    { month: 'Nov', value: 91, hero: true },
+    { month: 'Dic', value: 85, hero: false },
   ];
 
-  // Scatter data: costo vs beneficio
-  const scatterData = Array.from({ length: 40 }, (_, i) => {
+  // Scatter: the ball IS project #0 (the star project — low cost, high profit)
+  const HERO_SCATTER_ID = 0;
+  const scatterData = [
+    // Hero point: low cost, high profit
+    { id: 0, cost: 18, profit: 82, category: 'Estrella', size: 18, hero: true },
+  ];
+  // Generate the rest
+  for (let i = 1; i <= 35; i++) {
     const cost = 10 + Math.random() * 85;
-    const profit = cost * (0.3 + Math.random() * 0.9) + (Math.random() - 0.5) * 20;
+    const profit = cost * (0.2 + Math.random() * 0.8) + (Math.random() - 0.5) * 15;
     const categories = ['Tech', 'Salud', 'Finanzas', 'Retail'];
-    return {
+    scatterData.push({
       id: i,
       cost: +cost.toFixed(1),
       profit: +Math.max(5, profit).toFixed(1),
       category: categories[i % 4],
-      size: 5 + Math.random() * 15,
-    };
-  });
-
-  const categoryColors = {
-    'Tech': '#f5c518',
-    'Salud': '#4dabf7',
-    'Finanzas': '#00e5a0',
-    'Retail': '#ff6b8a',
-  };
+      size: 4 + Math.random() * 10,
+      hero: false,
+    });
+  }
 
   // ═══════════════════════════════════════════════════════════════════
   // SVG SETUP
   // ═══════════════════════════════════════════════════════════════════
 
-  const container = document.getElementById('viz-container');
-  const margin = { top: 40, right: 40, bottom: 60, left: 70 };
-  const W = 900;
-  const H = 520;
+  const margin = { top: 50, right: 40, bottom: 60, left: 70 };
+  const W = 900, H = 520;
   const width = W - margin.left - margin.right;
   const height = H - margin.top - margin.bottom;
 
@@ -411,83 +342,98 @@
     .style('width', '100%')
     .style('height', '100%');
 
+  // Defs for glow filter
+  const defs = svg.append('defs');
+  const glowFilter = defs.append('filter').attr('id', 'ball-glow');
+  glowFilter.append('feGaussianBlur').attr('stdDeviation', '6').attr('result', 'coloredBlur');
+  const feMerge = glowFilter.append('feMerge');
+  feMerge.append('feMergeNode').attr('in', 'coloredBlur');
+  feMerge.append('feMergeNode').attr('in', 'SourceGraphic');
+
+  // Area gradient
+  const areaGrad = defs.append('linearGradient')
+    .attr('id', 'lineAreaGradient')
+    .attr('x1', '0%').attr('y1', '0%')
+    .attr('x2', '0%').attr('y2', '100%');
+  areaGrad.append('stop').attr('offset', '0%')
+    .attr('stop-color', GRAY).attr('stop-opacity', 0.15);
+  areaGrad.append('stop').attr('offset', '100%')
+    .attr('stop-color', GRAY).attr('stop-opacity', 0);
+
   const g = svg.append('g')
     .attr('transform', `translate(${margin.left},${margin.top})`);
 
-  // Axes groups
-  const xAxisG = g.append('g')
-    .attr('class', 'axis x-axis')
-    .attr('transform', `translate(0,${height})`)
-    .style('opacity', 0);
+  // Background elements layer
+  const gridG = g.append('g').attr('class', 'grid').style('opacity', 0);
+  const xAxisG = g.append('g').attr('class', 'axis x-axis')
+    .attr('transform', `translate(0,${height})`).style('opacity', 0);
+  const yAxisG = g.append('g').attr('class', 'axis y-axis').style('opacity', 0);
 
-  const yAxisG = g.append('g')
-    .attr('class', 'axis y-axis')
-    .style('opacity', 0);
-
-  const gridG = g.append('g')
-    .attr('class', 'grid')
-    .style('opacity', 0);
+  // Chart elements layer (below ball)
+  const chartLayer = g.append('g').attr('class', 'chart-layer');
 
   // Axis labels
-  const xLabel = g.append('text')
-    .attr('class', 'axis-label')
-    .attr('x', width / 2)
-    .attr('y', height + 50)
-    .attr('text-anchor', 'middle')
-    .attr('fill', '#555')
-    .attr('font-size', '12px')
+  const xLabel = g.append('text').attr('class', 'axis-label')
+    .attr('x', width / 2).attr('y', height + 50)
+    .attr('text-anchor', 'middle').attr('fill', '#555').attr('font-size', '12px')
     .style('opacity', 0);
 
-  const yLabel = g.append('text')
-    .attr('class', 'axis-label')
+  const yLabelEl = g.append('text').attr('class', 'axis-label')
     .attr('transform', 'rotate(-90)')
-    .attr('x', -height / 2)
-    .attr('y', -50)
-    .attr('text-anchor', 'middle')
-    .attr('fill', '#555')
-    .attr('font-size', '12px')
+    .attr('x', -height / 2).attr('y', -50)
+    .attr('text-anchor', 'middle').attr('fill', '#555').attr('font-size', '12px')
     .style('opacity', 0);
 
-  // Chart title inside SVG
+  // Chart title
   const chartTitle = g.append('text')
-    .attr('x', width / 2)
-    .attr('y', -12)
+    .attr('x', width / 2).attr('y', -18)
     .attr('text-anchor', 'middle')
-    .attr('fill', '#f5c518')
-    .attr('font-size', '16px')
-    .attr('font-weight', '600')
-    .attr('font-family', 'Inter, sans-serif')
+    .attr('fill', GRAY_LIGHT).attr('font-size', '14px')
+    .attr('font-weight', '400').attr('font-family', 'Inter, sans-serif')
+    .attr('letter-spacing', '1px')
     .style('opacity', 0);
 
   // ═══════════════════════════════════════════════════════════════════
-  // THE YELLOW BALL
+  // THE YELLOW BALL (always on top)
   // ═══════════════════════════════════════════════════════════════════
 
-  const ball = svg.append('circle')
-    .attr('cx', W / 2)
-    .attr('cy', H / 2)
-    .attr('r', 30)
-    .attr('fill', '#f5c518')
-    .style('filter', 'drop-shadow(0 0 20px rgba(245, 197, 24, 0.6))');
+  const ballGroup = svg.append('g').attr('class', 'ball-group');
 
-  // Glow pulse animation
-  const glowAnim = svg.append('circle')
-    .attr('cx', W / 2)
-    .attr('cy', H / 2)
-    .attr('r', 30)
-    .attr('fill', 'none')
-    .attr('stroke', '#f5c518')
-    .attr('stroke-width', 2)
-    .attr('opacity', 0.4);
+  // Glow ring
+  const glowRing = ballGroup.append('circle')
+    .attr('cx', W / 2).attr('cy', H / 2)
+    .attr('r', 30).attr('fill', 'none')
+    .attr('stroke', YELLOW).attr('stroke-width', 2).attr('opacity', 0.4);
 
+  // Main ball
+  const ball = ballGroup.append('circle')
+    .attr('cx', W / 2).attr('cy', H / 2)
+    .attr('r', 30).attr('fill', YELLOW)
+    .attr('filter', 'url(#ball-glow)');
+
+  // Ball value label
+  const ballLabel = ballGroup.append('text')
+    .attr('x', W / 2).attr('y', H / 2 - 45)
+    .attr('text-anchor', 'middle')
+    .attr('fill', YELLOW).attr('font-size', '13px')
+    .attr('font-weight', '700').attr('font-family', 'Inter, sans-serif')
+    .attr('opacity', 0);
+
+  // Ball sublabel
+  const ballSublabel = ballGroup.append('text')
+    .attr('x', W / 2).attr('y', H / 2 - 30)
+    .attr('text-anchor', 'middle')
+    .attr('fill', '#888').attr('font-size', '10px')
+    .attr('font-weight', '400').attr('font-family', 'Inter, sans-serif')
+    .attr('opacity', 0);
+
+  // Pulse animation
   function pulseGlow() {
-    glowAnim
-      .attr('r', 30)
-      .attr('opacity', 0.4)
-      .transition()
-      .duration(1500)
-      .ease(d3.easeSinInOut)
-      .attr('r', 55)
+    glowRing
+      .attr('r', ball.attr('r') * 1)
+      .attr('opacity', 0.5)
+      .transition().duration(1400).ease(d3.easeSinInOut)
+      .attr('r', +ball.attr('r') + 22)
       .attr('opacity', 0)
       .on('end', pulseGlow);
   }
@@ -505,14 +451,12 @@
     tLabel.text(label);
     tValue.text(value);
     tooltip
-      .style('left', (event.clientX + 15) + 'px')
-      .style('top', (event.clientY - 10) + 'px')
+      .style('left', (event.clientX + 16) + 'px')
+      .style('top', (event.clientY - 12) + 'px')
       .style('opacity', 1);
   }
 
-  function hideTooltip() {
-    tooltip.style('opacity', 0);
-  }
+  function hideTooltip() { tooltip.style('opacity', 0); }
 
   // ═══════════════════════════════════════════════════════════════════
   // CHART RENDERERS
@@ -520,141 +464,176 @@
 
   let currentPhase = -1;
 
-  // ── Clear everything ──
-  function clearChart(dur = 600) {
-    g.selectAll('.lollipop-line').transition().duration(dur).attr('opacity', 0).remove();
-    g.selectAll('.lollipop-circle').transition().duration(dur).attr('opacity', 0).remove();
-    g.selectAll('.line-path').transition().duration(dur).attr('opacity', 0).remove();
-    g.selectAll('.line-area').transition().duration(dur).attr('opacity', 0).remove();
-    g.selectAll('.line-dot').transition().duration(dur).attr('opacity', 0).remove();
-    g.selectAll('.scatter-dot').transition().duration(dur).attr('opacity', 0).remove();
-    g.selectAll('.scatter-legend').remove();
+  function clearChart(dur = 500) {
+    chartLayer.selectAll('*').transition().duration(dur).attr('opacity', 0).remove();
+    // Delay the actual removal to let transitions finish
+    setTimeout(() => chartLayer.selectAll('*').remove(), dur + 50);
     xAxisG.transition().duration(dur).style('opacity', 0);
     yAxisG.transition().duration(dur).style('opacity', 0);
     gridG.transition().duration(dur).style('opacity', 0);
     xLabel.transition().duration(dur).style('opacity', 0);
-    yLabel.transition().duration(dur).style('opacity', 0);
+    yLabelEl.transition().duration(dur).style('opacity', 0);
     chartTitle.transition().duration(dur).style('opacity', 0);
+    ballLabel.transition().duration(dur / 2).attr('opacity', 0);
+    ballSublabel.transition().duration(dur / 2).attr('opacity', 0);
   }
 
-  // ── Phase 0: Just the ball ──
+  // ── PHASE 0: Just the ball, centered ──
   function showBall(dur = 800) {
     clearChart(dur / 2);
-    ball.transition().duration(dur)
-      .attr('cx', W / 2)
-      .attr('cy', H / 2)
-      .attr('r', 30)
-      .attr('opacity', 1)
-      .style('filter', 'drop-shadow(0 0 20px rgba(245, 197, 24, 0.6))');
 
-    glowAnim.transition().duration(dur)
-      .attr('cx', W / 2)
-      .attr('cy', H / 2)
-      .attr('opacity', 0.4);
+    ball.transition().duration(dur).ease(d3.easeCubicOut)
+      .attr('cx', W / 2).attr('cy', H / 2).attr('r', 30)
+      .attr('opacity', 1);
+
+    glowRing.transition().duration(dur)
+      .attr('cx', W / 2).attr('cy', H / 2).attr('opacity', 0.4);
+
+    ballLabel.transition().duration(dur).attr('opacity', 0);
+    ballSublabel.transition().duration(dur).attr('opacity', 0);
   }
 
-  // ── Phase 1: Lollipop Chart ──
+  // ── PHASE 1: Lollipop — ball becomes the hero data point ──
   function showLollipop(dur = 900) {
-    clearChart(300);
-
-    // Hide ball
-    ball.transition().duration(dur / 2)
-      .attr('r', 4)
-      .attr('opacity', 0);
-    glowAnim.transition().duration(dur / 3).attr('opacity', 0);
+    clearChart(250);
 
     const x = d3.scaleBand()
       .domain(lollipopData.map(d => d.name))
-      .range([0, width])
-      .padding(0.4);
+      .range([0, width]).padding(0.35);
 
     const y = d3.scaleLinear()
-      .domain([0, d3.max(lollipopData, d => d.value) * 1.15])
+      .domain([0, d3.max(lollipopData, d => d.value) * 1.12])
       .range([height, 0]);
 
-    // Axes
+    // Find hero position
+    const heroD = lollipopData.find(d => d.hero);
+    const heroCx = margin.left + x(heroD.name) + x.bandwidth() / 2;
+    const heroCy = margin.top + y(heroD.value);
+
+    // Animate ball to hero position
+    ball.transition().duration(dur).ease(d3.easeBackOut.overshoot(1.1))
+      .attr('cx', heroCx).attr('cy', heroCy).attr('r', 12);
+
+    glowRing.transition().duration(dur).ease(d3.easeBackOut)
+      .attr('cx', heroCx).attr('cy', heroCy);
+
+    // Ball label
+    ballLabel.text(`${heroD.value}K`)
+      .transition().delay(dur * 0.7).duration(400)
+      .attr('x', heroCx).attr('y', heroCy - 24).attr('opacity', 1);
+
+    ballSublabel.text(heroD.name)
+      .transition().delay(dur * 0.7).duration(400)
+      .attr('x', heroCx).attr('y', heroCy - 12).attr('opacity', 1);
+
     setTimeout(() => {
-      xAxisG.call(d3.axisBottom(x))
-        .transition().duration(dur).style('opacity', 1);
-      xAxisG.selectAll('text')
-        .attr('transform', 'rotate(-25)')
-        .style('text-anchor', 'end');
+      // Axes
+      xAxisG.call(d3.axisBottom(x)).transition().duration(dur).style('opacity', 1);
+      xAxisG.selectAll('text').attr('transform', 'rotate(-25)').style('text-anchor', 'end')
+        .attr('fill', d => d === heroD.name ? YELLOW : '#555');
 
       yAxisG.call(d3.axisLeft(y).ticks(6).tickFormat(d => d + 'K'))
         .transition().duration(dur).style('opacity', 1);
 
       gridG.call(d3.axisLeft(y).tickSize(-width).tickFormat('').ticks(6))
+        .transition().duration(dur).style('opacity', 0.6);
+
+      chartTitle.text('VENTAS POR PRODUCTO')
         .transition().duration(dur).style('opacity', 1);
 
-      chartTitle.text('Ventas por Producto (miles)')
-        .transition().duration(dur).style('opacity', 1);
-
-      // Lollipop sticks
-      g.selectAll('.lollipop-line')
-        .data(lollipopData)
-        .enter()
-        .append('line')
+      // Lollipop sticks (gray for non-hero)
+      chartLayer.selectAll('.lollipop-line')
+        .data(lollipopData.filter(d => !d.hero))
+        .enter().append('line')
         .attr('class', 'lollipop-line')
         .attr('x1', d => x(d.name) + x.bandwidth() / 2)
         .attr('x2', d => x(d.name) + x.bandwidth() / 2)
-        .attr('y1', height)
-        .attr('y2', height)
-        .attr('stroke', '#f5c518')
-        .attr('stroke-width', 3)
-        .attr('stroke-linecap', 'round')
-        .attr('opacity', 0.7)
-        .transition()
-        .duration(dur)
-        .delay((d, i) => i * 80)
+        .attr('y1', height).attr('y2', height)
+        .attr('stroke', GRAY).attr('stroke-width', 2.5)
+        .attr('stroke-linecap', 'round').attr('opacity', 0)
+        .transition().duration(dur).delay((d, i) => i * 60)
         .ease(d3.easeBackOut.overshoot(1.2))
-        .attr('y2', d => y(d.value));
+        .attr('y2', d => y(d.value)).attr('opacity', 0.6);
 
-      // Lollipop circles
-      g.selectAll('.lollipop-circle')
-        .data(lollipopData)
-        .enter()
-        .append('circle')
+      // Lollipop circles (gray)
+      chartLayer.selectAll('.lollipop-circle')
+        .data(lollipopData.filter(d => !d.hero))
+        .enter().append('circle')
         .attr('class', 'lollipop-circle')
         .attr('cx', d => x(d.name) + x.bandwidth() / 2)
-        .attr('cy', height)
-        .attr('r', 0)
-        .attr('fill', '#f5c518')
-        .attr('stroke', '#0a0a0a')
-        .attr('stroke-width', 2)
+        .attr('cy', height).attr('r', 0)
+        .attr('fill', GRAY).attr('stroke', BG).attr('stroke-width', 2)
         .style('cursor', 'pointer')
-        .style('filter', 'drop-shadow(0 0 6px rgba(245, 197, 24, 0.4))')
         .on('mousemove', function (event, d) {
-          d3.select(this).transition().duration(150).attr('r', 12);
+          d3.select(this).transition().duration(120).attr('r', 9).attr('fill', GRAY_LIGHT);
           showTooltip(event, d.name, `${d.value}K unidades`);
         })
         .on('mouseleave', function () {
-          d3.select(this).transition().duration(150).attr('r', 8);
+          d3.select(this).transition().duration(120).attr('r', 6).attr('fill', GRAY);
           hideTooltip();
         })
-        .transition()
-        .duration(dur)
-        .delay((d, i) => i * 80)
-        .ease(d3.easeBackOut.overshoot(1.5))
-        .attr('cy', d => y(d.value))
-        .attr('r', 8);
-    }, 350);
+        .transition().duration(dur).delay((d, i) => i * 60)
+        .ease(d3.easeBackOut.overshoot(1.3))
+        .attr('cy', d => y(d.value)).attr('r', 6);
+
+      // Hero stick (yellow, appears with ball)
+      chartLayer.append('line')
+        .attr('class', 'lollipop-line hero-line')
+        .attr('x1', x(heroD.name) + x.bandwidth() / 2)
+        .attr('x2', x(heroD.name) + x.bandwidth() / 2)
+        .attr('y1', height).attr('y2', height)
+        .attr('stroke', YELLOW).attr('stroke-width', 3)
+        .attr('stroke-linecap', 'round').attr('opacity', 0.9)
+        .transition().duration(dur).ease(d3.easeBackOut)
+        .attr('y2', y(heroD.value));
+
+      // Value labels on gray dots
+      chartLayer.selectAll('.lollipop-val')
+        .data(lollipopData.filter(d => !d.hero))
+        .enter().append('text')
+        .attr('class', 'lollipop-val')
+        .attr('x', d => x(d.name) + x.bandwidth() / 2)
+        .attr('y', d => y(d.value) - 14)
+        .attr('text-anchor', 'middle')
+        .attr('fill', GRAY_LIGHT).attr('font-size', '10px')
+        .attr('font-family', 'Inter, sans-serif')
+        .text(d => d.value + 'K')
+        .attr('opacity', 0)
+        .transition().delay(dur + 200).duration(400).attr('opacity', 0.5);
+
+    }, 300);
   }
 
-  // ── Phase 2: Line + Dots Chart ──
+  // ── PHASE 2: Line + Dots — ball becomes Nov peak ──
   function showLineChart(dur = 900) {
-    clearChart(300);
-
-    ball.transition().duration(300).attr('opacity', 0);
-    glowAnim.transition().duration(200).attr('opacity', 0);
+    clearChart(250);
 
     const x = d3.scaleBand()
       .domain(lineData.map(d => d.month))
-      .range([0, width])
-      .padding(0.1);
+      .range([0, width]).padding(0.05);
 
     const y = d3.scaleLinear()
       .domain([0, d3.max(lineData, d => d.value) * 1.15])
       .range([height, 0]);
+
+    const heroD = lineData.find(d => d.hero);
+    const heroCx = margin.left + x(heroD.month) + x.bandwidth() / 2;
+    const heroCy = margin.top + y(heroD.value);
+
+    // Animate ball to hero position
+    ball.transition().duration(dur).ease(d3.easeBackOut.overshoot(1.0))
+      .attr('cx', heroCx).attr('cy', heroCy).attr('r', 10);
+
+    glowRing.transition().duration(dur).ease(d3.easeBackOut)
+      .attr('cx', heroCx).attr('cy', heroCy);
+
+    ballLabel.text(`$${heroD.value}K`)
+      .transition().delay(dur * 0.8).duration(400)
+      .attr('x', heroCx + 20).attr('y', heroCy - 16).attr('opacity', 1);
+
+    ballSublabel.text('Pico del anio')
+      .transition().delay(dur * 0.8).duration(400)
+      .attr('x', heroCx + 20).attr('y', heroCy - 4).attr('opacity', 1);
 
     const lineGen = d3.line()
       .x(d => x(d.month) + x.bandwidth() / 2)
@@ -663,112 +642,113 @@
 
     const areaGen = d3.area()
       .x(d => x(d.month) + x.bandwidth() / 2)
-      .y0(height)
-      .y1(d => y(d.value))
+      .y0(height).y1(d => y(d.value))
       .curve(d3.curveCatmullRom.alpha(0.5));
 
-    // Gradient for area
-    let areaGrad = svg.select('#lineAreaGradient');
-    if (areaGrad.empty()) {
-      areaGrad = svg.append('defs').append('linearGradient')
-        .attr('id', 'lineAreaGradient')
-        .attr('x1', '0%').attr('y1', '0%')
-        .attr('x2', '0%').attr('y2', '100%');
-      areaGrad.append('stop').attr('offset', '0%')
-        .attr('stop-color', '#f5c518').attr('stop-opacity', 0.25);
-      areaGrad.append('stop').attr('offset', '100%')
-        .attr('stop-color', '#f5c518').attr('stop-opacity', 0);
-    }
-
     setTimeout(() => {
-      xAxisG.call(d3.axisBottom(x))
-        .transition().duration(dur).style('opacity', 1);
+      xAxisG.call(d3.axisBottom(x)).transition().duration(dur).style('opacity', 1);
+      xAxisG.selectAll('text')
+        .attr('fill', d => d === heroD.month ? YELLOW : '#555');
 
       yAxisG.call(d3.axisLeft(y).ticks(6).tickFormat(d => '$' + d + 'K'))
         .transition().duration(dur).style('opacity', 1);
 
       gridG.call(d3.axisLeft(y).tickSize(-width).tickFormat('').ticks(6))
+        .transition().duration(dur).style('opacity', 0.6);
+
+      chartTitle.text('INGRESOS MENSUALES 2025')
         .transition().duration(dur).style('opacity', 1);
 
-      chartTitle.text('Ingresos Mensuales 2025')
-        .transition().duration(dur).style('opacity', 1);
+      // Area (gray, subtle)
+      chartLayer.append('path')
+        .datum(lineData).attr('class', 'line-area')
+        .attr('fill', 'url(#lineAreaGradient)').attr('opacity', 0)
+        .attr('d', areaGen)
+        .transition().delay(300).duration(dur).attr('opacity', 0.8);
 
-      // Area
-      const areaPath = g.append('path')
-        .datum(lineData)
-        .attr('class', 'line-area')
-        .attr('fill', 'url(#lineAreaGradient)')
-        .attr('opacity', 0)
-        .attr('d', areaGen);
-
-      areaPath.transition().delay(400).duration(dur).attr('opacity', 1);
-
-      // Line with drawing animation
-      const linePath = g.append('path')
-        .datum(lineData)
-        .attr('class', 'line-path')
-        .attr('fill', 'none')
-        .attr('stroke', '#f5c518')
-        .attr('stroke-width', 3)
-        .attr('stroke-linecap', 'round')
-        .attr('stroke-linejoin', 'round')
-        .attr('d', lineGen)
-        .style('filter', 'drop-shadow(0 0 4px rgba(245, 197, 24, 0.3))');
+      // Line (gray)
+      const linePath = chartLayer.append('path')
+        .datum(lineData).attr('class', 'line-path')
+        .attr('fill', 'none').attr('stroke', GRAY)
+        .attr('stroke-width', 2.5).attr('stroke-linecap', 'round')
+        .attr('stroke-linejoin', 'round').attr('d', lineGen);
 
       const totalLength = linePath.node().getTotalLength();
       linePath
         .attr('stroke-dasharray', totalLength)
         .attr('stroke-dashoffset', totalLength)
-        .transition()
-        .duration(dur * 1.5)
-        .delay(200)
+        .transition().duration(dur * 1.3).delay(150)
         .ease(d3.easeCubicInOut)
         .attr('stroke-dashoffset', 0);
 
-      // Dots
-      g.selectAll('.line-dot')
-        .data(lineData)
-        .enter()
-        .append('circle')
+      // Dots (gray for non-hero)
+      chartLayer.selectAll('.line-dot')
+        .data(lineData.filter(d => !d.hero))
+        .enter().append('circle')
         .attr('class', 'line-dot')
         .attr('cx', d => x(d.month) + x.bandwidth() / 2)
         .attr('cy', d => y(d.value))
-        .attr('r', 0)
-        .attr('fill', '#f5c518')
-        .attr('stroke', '#0a0a0a')
-        .attr('stroke-width', 2.5)
+        .attr('r', 0).attr('fill', GRAY)
+        .attr('stroke', BG).attr('stroke-width', 2)
         .style('cursor', 'pointer')
-        .style('filter', 'drop-shadow(0 0 5px rgba(245, 197, 24, 0.4))')
         .on('mousemove', function (event, d) {
-          d3.select(this).transition().duration(150).attr('r', 9);
+          d3.select(this).transition().duration(120).attr('r', 7).attr('fill', GRAY_LIGHT);
           showTooltip(event, d.month + ' 2025', `$${d.value}K`);
         })
         .on('mouseleave', function () {
-          d3.select(this).transition().duration(150).attr('r', 5.5);
+          d3.select(this).transition().duration(120).attr('r', 4.5).attr('fill', GRAY);
           hideTooltip();
         })
-        .transition()
-        .duration(500)
-        .delay((d, i) => 400 + i * 70)
+        .transition().duration(400)
+        .delay((d, i) => 350 + i * 55)
         .ease(d3.easeBackOut)
-        .attr('r', 5.5);
-    }, 350);
+        .attr('r', 4.5);
+
+      // Highlight segment near hero — small yellow glow on the line near Nov
+      const heroIdx = lineData.indexOf(heroD);
+      const nearHero = lineData.slice(Math.max(0, heroIdx - 1), heroIdx + 2);
+      chartLayer.append('path')
+        .datum(nearHero).attr('class', 'line-highlight')
+        .attr('fill', 'none').attr('stroke', YELLOW)
+        .attr('stroke-width', 3).attr('stroke-linecap', 'round')
+        .attr('d', lineGen).attr('opacity', 0)
+        .style('filter', 'drop-shadow(0 0 6px rgba(245, 197, 24, 0.5))')
+        .transition().delay(dur).duration(500).attr('opacity', 0.9);
+
+    }, 300);
   }
 
-  // ── Phase 3: Scatter Plot ──
+  // ── PHASE 3: Scatter — ball becomes the star project ──
   function showScatter(dur = 900) {
-    clearChart(300);
+    clearChart(250);
 
-    ball.transition().duration(300).attr('opacity', 0);
-    glowAnim.transition().duration(200).attr('opacity', 0);
+    const heroD = scatterData.find(d => d.hero);
 
     const x = d3.scaleLinear()
-      .domain([0, d3.max(scatterData, d => d.cost) * 1.1])
+      .domain([0, d3.max(scatterData, d => d.cost) * 1.15])
       .range([0, width]);
 
     const y = d3.scaleLinear()
-      .domain([0, d3.max(scatterData, d => d.profit) * 1.1])
+      .domain([0, d3.max(scatterData, d => d.profit) * 1.15])
       .range([height, 0]);
+
+    const heroCx = margin.left + x(heroD.cost);
+    const heroCy = margin.top + y(heroD.profit);
+
+    // Animate ball to hero position
+    ball.transition().duration(dur).ease(d3.easeBackOut.overshoot(1.2))
+      .attr('cx', heroCx).attr('cy', heroCy).attr('r', 14);
+
+    glowRing.transition().duration(dur).ease(d3.easeBackOut)
+      .attr('cx', heroCx).attr('cy', heroCy);
+
+    ballLabel.text(`$${heroD.profit}K beneficio`)
+      .transition().delay(dur * 0.8).duration(400)
+      .attr('x', heroCx).attr('y', heroCy - 28).attr('opacity', 1);
+
+    ballSublabel.text(`Solo $${heroD.cost}K de costo`)
+      .transition().delay(dur * 0.8).duration(400)
+      .attr('x', heroCx).attr('y', heroCy - 16).attr('opacity', 1);
 
     setTimeout(() => {
       xAxisG.call(d3.axisBottom(x).ticks(8).tickFormat(d => '$' + d + 'K'))
@@ -778,82 +758,77 @@
         .transition().duration(dur).style('opacity', 1);
 
       gridG.call(d3.axisLeft(y).tickSize(-width).tickFormat('').ticks(8))
-        .transition().duration(dur).style('opacity', 1);
+        .transition().duration(dur).style('opacity', 0.6);
 
-      chartTitle.text('Costo vs Beneficio por Proyecto')
+      chartTitle.text('COSTO VS BENEFICIO POR PROYECTO')
         .transition().duration(dur).style('opacity', 1);
 
       xLabel.text('Costo del Proyecto')
         .transition().duration(dur).style('opacity', 1);
-      yLabel.text('Beneficio Generado')
+      yLabelEl.text('Beneficio Generado')
         .transition().duration(dur).style('opacity', 1);
 
-      // Scatter dots
-      g.selectAll('.scatter-dot')
-        .data(scatterData)
-        .enter()
-        .append('circle')
+      // Gray scatter dots (non-hero)
+      chartLayer.selectAll('.scatter-dot')
+        .data(scatterData.filter(d => !d.hero))
+        .enter().append('circle')
         .attr('class', 'scatter-dot')
-        .attr('cx', width / 2)
-        .attr('cy', height / 2)
-        .attr('r', 0)
-        .attr('fill', d => categoryColors[d.category])
-        .attr('opacity', 0)
-        .attr('stroke', '#0a0a0a')
-        .attr('stroke-width', 1.5)
+        .attr('cx', width / 2).attr('cy', height / 2)
+        .attr('r', 0).attr('fill', GRAY)
+        .attr('opacity', 0).attr('stroke', BG).attr('stroke-width', 1)
         .style('cursor', 'pointer')
         .on('mousemove', function (event, d) {
-          d3.select(this)
-            .transition().duration(150)
-            .attr('r', d.size * 0.7 + 4)
-            .attr('opacity', 1);
+          d3.select(this).transition().duration(120)
+            .attr('r', d.size * 0.5 + 3).attr('fill', GRAY_LIGHT);
           showTooltip(event, `${d.category} #${d.id}`, `Costo: $${d.cost}K | Beneficio: $${d.profit}K`);
         })
         .on('mouseleave', function (event, d) {
-          d3.select(this)
-            .transition().duration(150)
-            .attr('r', d.size * 0.5)
-            .attr('opacity', 0.8);
+          d3.select(this).transition().duration(120)
+            .attr('r', d.size * 0.4).attr('fill', GRAY);
           hideTooltip();
         })
-        .transition()
-        .duration(dur)
-        .delay((d, i) => i * 25)
-        .ease(d3.easeBackOut.overshoot(1.3))
-        .attr('cx', d => x(d.cost))
-        .attr('cy', d => y(d.profit))
-        .attr('r', d => d.size * 0.5)
-        .attr('opacity', 0.8);
+        .transition().duration(dur)
+        .delay((d, i) => i * 20)
+        .ease(d3.easeBackOut.overshoot(1.1))
+        .attr('cx', d => x(d.cost)).attr('cy', d => y(d.profit))
+        .attr('r', d => d.size * 0.4).attr('opacity', 0.5);
 
-      // Legend
-      const categories = Object.keys(categoryColors);
-      const legend = g.append('g')
-        .attr('class', 'scatter-legend')
-        .attr('transform', `translate(${width - 130}, 10)`);
+      // Crosshair lines for hero point
+      chartLayer.append('line')
+        .attr('class', 'crosshair-x')
+        .attr('x1', 0).attr('x2', x(heroD.cost))
+        .attr('y1', y(heroD.profit)).attr('y2', y(heroD.profit))
+        .attr('stroke', YELLOW).attr('stroke-width', 1)
+        .attr('stroke-dasharray', '4 4').attr('opacity', 0)
+        .transition().delay(dur + 100).duration(500).attr('opacity', 0.3);
 
-      categories.forEach((cat, i) => {
-        const row = legend.append('g')
-          .attr('transform', `translate(0, ${i * 22})`);
+      chartLayer.append('line')
+        .attr('class', 'crosshair-y')
+        .attr('x1', x(heroD.cost)).attr('x2', x(heroD.cost))
+        .attr('y1', height).attr('y2', y(heroD.profit))
+        .attr('stroke', YELLOW).attr('stroke-width', 1)
+        .attr('stroke-dasharray', '4 4').attr('opacity', 0)
+        .transition().delay(dur + 100).duration(500).attr('opacity', 0.3);
 
-        row.append('circle')
-          .attr('r', 5)
-          .attr('fill', categoryColors[cat])
-          .attr('opacity', 0)
-          .transition().delay(dur + i * 100).duration(400)
-          .attr('opacity', 0.9);
+      // "Zona ideal" annotation
+      chartLayer.append('text')
+        .attr('x', x(30)).attr('y', y(78))
+        .attr('fill', YELLOW).attr('font-size', '11px')
+        .attr('font-family', 'Inter, sans-serif')
+        .attr('font-weight', '600').attr('opacity', 0)
+        .text('zona ideal')
+        .transition().delay(dur + 400).duration(500).attr('opacity', 0.5);
 
-        row.append('text')
-          .attr('x', 14)
-          .attr('y', 4)
-          .text(cat)
-          .attr('fill', '#777')
-          .attr('font-size', '12px')
-          .attr('font-family', 'Inter, sans-serif')
-          .attr('opacity', 0)
-          .transition().delay(dur + i * 100).duration(400)
-          .attr('opacity', 1);
-      });
-    }, 350);
+      // Dashed rectangle for "ideal zone"
+      chartLayer.append('rect')
+        .attr('x', x(5)).attr('y', y(95))
+        .attr('width', x(40) - x(5)).attr('height', y(60) - y(95))
+        .attr('fill', 'none').attr('stroke', YELLOW)
+        .attr('stroke-width', 1).attr('stroke-dasharray', '6 4')
+        .attr('rx', 8).attr('opacity', 0)
+        .transition().delay(dur + 300).duration(500).attr('opacity', 0.15);
+
+    }, 300);
   }
 
   // ═══════════════════════════════════════════════════════════════════
@@ -863,7 +838,7 @@
   const phases = [showBall, showLollipop, showLineChart, showScatter];
   const phaseElements = [null, '#phase1', '#phase2', '#phase3'];
   const phaseDots = document.querySelectorAll('.phase-dot');
-  const labels = [null, '#label1', '#label2', '#label3'];
+  const labelsMap = [null, '#label1', '#label2', '#label3'];
 
   function getScrollProgress() {
     const scrollTop = window.scrollY;
@@ -875,24 +850,19 @@
     const scrollTop = window.scrollY;
     const heroHeight = document.querySelector('.hero').offsetHeight;
 
-    // Still in hero
     if (scrollTop < heroHeight * 0.8) return 0;
 
-    // Check phases 1-3
     for (let i = 1; i <= 3; i++) {
       const el = document.querySelector(phaseElements[i]);
       if (!el) continue;
       const rect = el.getBoundingClientRect();
-      const triggerPoint = window.innerHeight * 0.5;
-      if (rect.top < triggerPoint && rect.bottom > triggerPoint) {
-        return i;
-      }
+      const trigger = window.innerHeight * 0.5;
+      if (rect.top < trigger && rect.bottom > trigger) return i;
     }
 
-    // If we've scrolled past all phases
-    const lastPhase = document.querySelector(phaseElements[3]);
-    if (lastPhase) {
-      const rect = lastPhase.getBoundingClientRect();
+    const last = document.querySelector(phaseElements[3]);
+    if (last) {
+      const rect = last.getBoundingClientRect();
       if (rect.bottom < window.innerHeight * 0.5) return 3;
     }
 
@@ -900,22 +870,17 @@
   }
 
   function updateLabels(phase) {
-    labels.forEach((sel, i) => {
+    labelsMap.forEach((sel, i) => {
       if (!sel) return;
       const el = document.querySelector(sel);
-      if (el) {
-        el.classList.toggle('visible', i === phase);
-      }
+      if (el) el.classList.toggle('visible', i === phase);
     });
   }
 
   function updatePhaseDots(phase) {
-    phaseDots.forEach((dot, i) => {
-      dot.classList.toggle('active', i === phase);
-    });
+    phaseDots.forEach((dot, i) => dot.classList.toggle('active', i === phase));
   }
 
-  // Phase dot click handlers
   phaseDots.forEach(dot => {
     dot.addEventListener('click', () => {
       const phase = parseInt(dot.dataset.phase);
@@ -923,24 +888,16 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         const el = document.querySelector(phaseElements[phase]);
-        if (el) {
-          const top = el.offsetTop - window.innerHeight * 0.3;
-          window.scrollTo({ top, behavior: 'smooth' });
-        }
+        if (el) window.scrollTo({ top: el.offsetTop - window.innerHeight * 0.3, behavior: 'smooth' });
       }
     });
   });
 
-  // Scroll event
   let ticking = false;
   window.addEventListener('scroll', () => {
     if (!ticking) {
       requestAnimationFrame(() => {
-        // Progress bar
-        const progress = getScrollProgress();
-        document.getElementById('progressFill').style.width = (progress * 100) + '%';
-
-        // Phase detection
+        document.getElementById('progressFill').style.width = (getScrollProgress() * 100) + '%';
         const phase = getActivePhase();
         if (phase !== currentPhase) {
           currentPhase = phase;
@@ -948,7 +905,6 @@
           updatePhaseDots(phase);
         }
         updateLabels(phase);
-
         ticking = false;
       });
       ticking = true;
@@ -958,7 +914,6 @@
   // ═══════════════════════════════════════════════════════════════════
   // INIT
   // ═══════════════════════════════════════════════════════════════════
-
   showBall(0);
   </script>
 </body>
