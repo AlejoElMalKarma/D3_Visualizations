@@ -7,7 +7,6 @@
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
 
@@ -18,16 +17,17 @@
       overflow-x: hidden;
     }
 
-    /* ── Fixed viz overlay (always visible) ── */
-    #viz-overlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100vh;
+    /* ── Scroll layout ── */
+    .scroll-container { position: relative; }
+
+    .sticky-wrapper {
+      position: sticky;
+      top: 0;
+      height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 10;
-      pointer-events: none;
     }
 
     #viz-container {
@@ -36,58 +36,82 @@
       height: 520px;
     }
 
-    #viz-container svg { pointer-events: none; }
-    /* Only interactive chart elements capture mouse */
-    .interactive { pointer-events: all !important; }
-
-    /* ── Hero (scrolls normally, above overlay) ── */
-    .hero {
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+    .scroll-spacer {
+      height: 150vh;
       position: relative;
-      z-index: 15;
     }
 
-    .hero h1 {
+    /* ── Fixed labels at BOTTOM of viewport ── */
+    .fixed-label {
+      position: fixed;
+      bottom: 4vh;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      z-index: 30;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      pointer-events: none;
+      width: 90%;
+      max-width: 600px;
+    }
+
+    .fixed-label.visible { opacity: 1; }
+
+    .fixed-label h2 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #c0c0c0;
+      margin-bottom: 6px;
+    }
+
+    .fixed-label h2 .hl { color: #f5c518; }
+
+    .fixed-label p {
+      font-size: 0.95rem;
+      color: #666;
+      font-weight: 300;
+      line-height: 1.5;
+    }
+
+    .fixed-label p .y { color: #f5c518; font-weight: 600; }
+
+    /* ── Hero label (centered, bigger) ── */
+    .fixed-label.hero-lbl {
+      bottom: auto;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .fixed-label.hero-lbl h1 {
       font-size: 3.5rem;
       font-weight: 700;
       color: #e0e0e0;
       letter-spacing: -1px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
-    .hero h1 .dot { color: #f5c518; }
+    .fixed-label.hero-lbl h1 .hl { color: #f5c518; }
 
-    .hero .hero-sub {
+    .fixed-label.hero-lbl p {
       font-size: 1.15rem;
       color: #777;
-      font-weight: 300;
-      margin-bottom: 0;
     }
 
-    .hero .hero-sub .dot {
-      color: #f5c518;
-      font-weight: 600;
-    }
-
-    .hero .scroll-hint {
-      position: absolute;
-      bottom: 40px;
+    .fixed-label.hero-lbl .scroll-hint {
+      margin-top: 60px;
       color: #444;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       letter-spacing: 2px;
       text-transform: uppercase;
       animation: pulse 2s ease-in-out infinite;
     }
 
-    .hero .scroll-hint .arrow {
+    .fixed-label.hero-lbl .scroll-hint .arrow {
       display: block;
       text-align: center;
-      font-size: 1.4rem;
-      margin-top: 6px;
+      font-size: 1.2rem;
+      margin-top: 4px;
       color: #f5c518;
     }
 
@@ -95,49 +119,6 @@
       0%, 100% { opacity: 0.4; transform: translateY(0); }
       50% { opacity: 1; transform: translateY(6px); }
     }
-
-    /* ── Scroll spacers (trigger phases) ── */
-    .scroll-spacer {
-      height: 160vh;
-      position: relative;
-      z-index: 1;
-    }
-
-    /* ── Section labels (above overlay) ── */
-    .section-label {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      top: 8vh;
-      text-align: center;
-      opacity: 0;
-      transition: opacity 0.6s ease;
-      pointer-events: none;
-      z-index: 20;
-    }
-
-    .section-label.visible { opacity: 1; }
-
-    .section-label h2 {
-      font-size: 2.2rem;
-      font-weight: 700;
-      color: #b0b0b0;
-      margin-bottom: 8px;
-      letter-spacing: -0.5px;
-    }
-
-    .section-label h2 .highlight { color: #f5c518; }
-
-    .section-label p {
-      font-size: 1rem;
-      color: #666;
-      font-weight: 300;
-      max-width: 520px;
-      margin: 0 auto;
-      line-height: 1.5;
-    }
-
-    .section-label p .yellow { color: #f5c518; font-weight: 600; }
 
     /* ── Tooltip ── */
     .tooltip {
@@ -160,17 +141,18 @@
 
     /* ── Footer ── */
     .footer {
-      height: 50vh;
+      height: 40vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       position: relative;
-      z-index: 5;
+      z-index: 25;
+      background: #0a0a0a;
     }
 
     .footer h2 { font-size: 2rem; font-weight: 700; color: #e0e0e0; margin-bottom: 8px; }
-    .footer h2 .highlight { color: #f5c518; }
+    .footer h2 .hl { color: #f5c518; }
     .footer p { color: #555; font-size: 0.9rem; }
 
     /* ── Progress bar ── */
@@ -180,8 +162,7 @@
     }
     .progress-fill {
       height: 100%; width: 0%;
-      background: #f5c518;
-      transition: width 0.05s linear;
+      background: #f5c518; transition: width 0.05s linear;
     }
 
     /* ── Phase indicator ── */
@@ -220,46 +201,42 @@
     <div class="phase-dot" data-phase="3" title="Scatter"></div>
   </div>
 
-  <!-- Fixed visualization overlay -->
-  <div id="viz-overlay">
-    <div id="viz-container"></div>
+  <!-- Fixed labels (shown/hidden by JS) -->
+  <div class="fixed-label hero-lbl visible" id="label0">
+    <h1>Data in <span class="hl">Motion</span></h1>
+    <p>Todo inicia con un <span class="y">data point</span></p>
+    <div class="scroll-hint">scroll para comenzar<span class="arrow">&#8595;</span></div>
   </div>
 
-  <!-- Hero (scrolls normally, above the ball) -->
-  <section class="hero">
-    <h1>Data in <span class="dot">Motion</span></h1>
-    <p class="hero-sub">Todo inicia con un <span class="dot">data point</span></p>
-    <div class="scroll-hint">
-      scroll para comenzar
-      <span class="arrow">&#8595;</span>
-    </div>
-  </section>
-
-  <!-- Scroll spacers trigger chart phases -->
-  <div class="scroll-spacer" id="phase1">
-    <div class="section-label" id="label1">
-      <h2>Ventas por <span class="highlight">Producto</span></h2>
-      <p>La bolita <span class="yellow">es</span> el Producto C: el lider con <span class="yellow">300K unidades</span>. Los demas aparecen en gris para dar contexto.</p>
-    </div>
+  <div class="fixed-label" id="label1">
+    <h2>Ventas por <span class="hl">Producto</span></h2>
+    <p>La bolita <span class="y">es</span> el Producto C: lider con <span class="y">300K unidades</span>.</p>
   </div>
 
-  <div class="scroll-spacer" id="phase2">
-    <div class="section-label" id="label2">
-      <h2>Tendencia <span class="highlight">Mensual</span></h2>
-      <p>La bolita viaja a <span class="yellow">Noviembre</span>, el pico del anio con <span class="yellow">$91K</span> en ingresos.</p>
-    </div>
+  <div class="fixed-label" id="label2">
+    <h2>Tendencia <span class="hl">Mensual</span></h2>
+    <p>La bolita viaja a <span class="y">Noviembre</span>, el pico del anio con <span class="y">$91K</span>.</p>
   </div>
 
-  <div class="scroll-spacer" id="phase3">
-    <div class="section-label" id="label3">
-      <h2>Costo vs <span class="highlight">Beneficio</span></h2>
-      <p>La bolita aterriza como el <span class="yellow">proyecto estrella</span>: bajo costo, alto beneficio.</p>
-    </div>
+  <div class="fixed-label" id="label3">
+    <h2>Costo vs <span class="hl">Beneficio</span></h2>
+    <p>La bolita aterriza como el <span class="y">proyecto estrella</span>: bajo costo, alto beneficio.</p>
   </div>
 
-  <!-- Footer -->
+  <!-- Scroll container with sticky chart -->
+  <div class="scroll-container">
+    <div class="sticky-wrapper">
+      <div id="viz-container"></div>
+    </div>
+
+    <div class="scroll-spacer" id="phase0"></div>
+    <div class="scroll-spacer" id="phase1"></div>
+    <div class="scroll-spacer" id="phase2"></div>
+    <div class="scroll-spacer" id="phase3"></div>
+  </div>
+
   <section class="footer">
-    <h2>Eso es <span class="highlight">todo</span>.</h2>
+    <h2>Eso es <span class="hl">todo</span>.</h2>
     <p>Scroll hacia arriba para verlo de nuevo.</p>
   </section>
 
@@ -269,8 +246,6 @@
   </div>
 
   <script>
-  // ═══════════════════════════════════════════════════════════════════
-  // CONSTANTS
   // ═══════════════════════════════════════════════════════════════════
   const YELLOW = '#f5c518';
   const GRAY = '#3a3a3a';
@@ -323,11 +298,11 @@
   }
 
   // ═══════════════════════════════════════════════════════════════════
-  // SVG SETUP
+  // SVG
   // ═══════════════════════════════════════════════════════════════════
 
-  const margin = { top: 50, right: 40, bottom: 60, left: 70 };
-  const W = 900, H = 520;
+  const margin = { top: 40, right: 40, bottom: 50, left: 65 };
+  const W = 900, H = 500;
   const width = W - margin.left - margin.right;
   const height = H - margin.top - margin.bottom;
 
@@ -337,125 +312,92 @@
     .attr('preserveAspectRatio', 'xMidYMid meet')
     .style('width', '100%').style('height', '100%');
 
-  // Defs
   const defs = svg.append('defs');
 
-  const glowFilter = defs.append('filter').attr('id', 'ball-glow')
+  const glowFilter = defs.append('filter').attr('id', 'glow')
     .attr('x', '-50%').attr('y', '-50%').attr('width', '200%').attr('height', '200%');
-  glowFilter.append('feGaussianBlur').attr('stdDeviation', '5').attr('result', 'blur');
+  glowFilter.append('feGaussianBlur').attr('stdDeviation', '4').attr('result', 'b');
   const fm = glowFilter.append('feMerge');
-  fm.append('feMergeNode').attr('in', 'blur');
+  fm.append('feMergeNode').attr('in', 'b');
   fm.append('feMergeNode').attr('in', 'SourceGraphic');
 
   const areaGrad = defs.append('linearGradient')
-    .attr('id', 'lineAreaGrad')
-    .attr('x1', '0%').attr('y1', '0%').attr('x2', '0%').attr('y2', '100%');
-  areaGrad.append('stop').attr('offset', '0%').attr('stop-color', GRAY).attr('stop-opacity', 0.18);
-  areaGrad.append('stop').attr('offset', '100%').attr('stop-color', GRAY).attr('stop-opacity', 0);
+    .attr('id', 'aGrad').attr('x1','0%').attr('y1','0%').attr('x2','0%').attr('y2','100%');
+  areaGrad.append('stop').attr('offset','0%').attr('stop-color',GRAY).attr('stop-opacity',0.18);
+  areaGrad.append('stop').attr('offset','100%').attr('stop-color',GRAY).attr('stop-opacity',0);
 
   const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
-  // Layers (order matters for z-stacking)
-  const gridG = g.append('g').attr('class', 'grid').style('opacity', 0);
-  const xAxisG = g.append('g').attr('class', 'axis x-axis')
-    .attr('transform', `translate(0,${height})`).style('opacity', 0);
-  const yAxisG = g.append('g').attr('class', 'axis y-axis').style('opacity', 0);
-  const chartLayer = g.append('g').attr('class', 'chart-layer');
+  const gridG = g.append('g').attr('class','grid').style('opacity',0);
+  const xAxisG = g.append('g').attr('class','axis').attr('transform',`translate(0,${height})`).style('opacity',0);
+  const yAxisG = g.append('g').attr('class','axis').style('opacity',0);
+  const chartLayer = g.append('g');
 
-  const xLabel = g.append('text').attr('class', 'axis-label')
-    .attr('x', width / 2).attr('y', height + 50)
-    .attr('text-anchor', 'middle').attr('fill', '#555').attr('font-size', '12px')
-    .style('opacity', 0);
+  const xLbl = g.append('text').attr('x',width/2).attr('y',height+45)
+    .attr('text-anchor','middle').attr('fill','#555').attr('font-size','11px').style('opacity',0);
+  const yLbl = g.append('text').attr('transform','rotate(-90)')
+    .attr('x',-height/2).attr('y',-48).attr('text-anchor','middle')
+    .attr('fill','#555').attr('font-size','11px').style('opacity',0);
 
-  const yLabelEl = g.append('text').attr('class', 'axis-label')
-    .attr('transform', 'rotate(-90)')
-    .attr('x', -height / 2).attr('y', -50)
-    .attr('text-anchor', 'middle').attr('fill', '#555').attr('font-size', '12px')
-    .style('opacity', 0);
-
-  const chartTitle = g.append('text')
-    .attr('x', width / 2).attr('y', -20)
-    .attr('text-anchor', 'middle')
-    .attr('fill', GRAY_LIGHT).attr('font-size', '14px')
-    .attr('font-weight', '400').attr('font-family', 'Inter, sans-serif')
-    .attr('letter-spacing', '1px').style('opacity', 0);
+  const chartTitle = g.append('text').attr('x',width/2).attr('y',-14)
+    .attr('text-anchor','middle').attr('fill',GRAY_LIGHT).attr('font-size','13px')
+    .attr('font-weight','400').attr('font-family','Inter,sans-serif')
+    .attr('letter-spacing','1px').style('opacity',0);
 
   // ═══════════════════════════════════════════════════════════════════
-  // THE YELLOW BALL (topmost layer)
+  // BALL (on top of everything in SVG)
   // ═══════════════════════════════════════════════════════════════════
 
-  const ballGroup = svg.append('g').attr('class', 'ball-group');
+  const ballG = svg.append('g');
 
-  const glowRing = ballGroup.append('circle')
-    .attr('cx', W / 2).attr('cy', H / 2)
-    .attr('r', 30).attr('fill', 'none')
-    .attr('stroke', YELLOW).attr('stroke-width', 2).attr('opacity', 0.4);
+  const heroCy = H/2 + 60;  // below hero subtitle text
 
-  const ball = ballGroup.append('circle')
-    .attr('cx', W / 2).attr('cy', H / 2)
-    .attr('r', 30).attr('fill', YELLOW)
-    .attr('filter', 'url(#ball-glow)');
+  const glowRing = ballG.append('circle')
+    .attr('cx',W/2).attr('cy',heroCy).attr('r',28)
+    .attr('fill','none').attr('stroke',YELLOW).attr('stroke-width',2).attr('opacity',0.4);
 
-  // Labels for ball callout
-  const ballLabel = ballGroup.append('text')
-    .attr('fill', YELLOW).attr('font-size', '14px')
-    .attr('font-weight', '700').attr('font-family', 'Inter, sans-serif')
-    .attr('opacity', 0);
+  const ball = ballG.append('circle')
+    .attr('cx',W/2).attr('cy',heroCy).attr('r',28)
+    .attr('fill',YELLOW).attr('filter','url(#glow)');
 
-  const ballSublabel = ballGroup.append('text')
-    .attr('fill', '#999').attr('font-size', '11px')
-    .attr('font-weight', '400').attr('font-family', 'Inter, sans-serif')
-    .attr('opacity', 0);
+  const bLabel = ballG.append('text').attr('fill',YELLOW).attr('font-size','13px')
+    .attr('font-weight','700').attr('font-family','Inter,sans-serif').attr('opacity',0);
 
-  let ballTargetR = 30;
+  const bSub = ballG.append('text').attr('fill','#999').attr('font-size','10px')
+    .attr('font-weight','400').attr('font-family','Inter,sans-serif').attr('opacity',0);
 
-  // Glow pulse
+  let ballR = 28;
+
   function pulseGlow() {
-    glowRing
-      .attr('r', ballTargetR)
-      .attr('opacity', 0.45)
-      .transition().duration(1400).ease(d3.easeSinInOut)
-      .attr('r', ballTargetR + 20)
-      .attr('opacity', 0)
+    glowRing.attr('r', ballR).attr('opacity', 0.4)
+      .transition().duration(1300).ease(d3.easeSinInOut)
+      .attr('r', ballR + 18).attr('opacity', 0)
       .on('end', pulseGlow);
   }
   pulseGlow();
 
-  // ═══════════════════════════════════════════════════════════════════
-  // BALL TRAVEL ANIMATION (with ghost trail)
-  // ═══════════════════════════════════════════════════════════════════
+  // Ball travel with trail
+  function flyBall(cx, cy, r, dur = 800) {
+    const px = +ball.attr('cx'), py = +ball.attr('cy'), pr = +ball.attr('r');
+    ballR = r;
 
-  function animateBallTo(cx, cy, r, dur = 900) {
-    const prevCx = +ball.attr('cx');
-    const prevCy = +ball.attr('cy');
-    const prevR = +ball.attr('r');
-    ballTargetR = r;
-
-    // Ghost trail particles
-    for (let i = 1; i <= 4; i++) {
-      ballGroup.insert('circle', ':first-child')
-        .attr('cx', prevCx).attr('cy', prevCy)
-        .attr('r', prevR * (1 - i * 0.12))
-        .attr('fill', YELLOW)
-        .attr('opacity', 0.18 / i)
-        .transition().delay(i * 35).duration(dur * 0.9)
+    // Ghost trail
+    for (let i = 1; i <= 3; i++) {
+      ballG.insert('circle',':first-child')
+        .attr('cx',px).attr('cy',py).attr('r',pr*(1-i*0.15))
+        .attr('fill',YELLOW).attr('opacity',0.15/i)
+        .transition().delay(i*30).duration(dur*0.85)
         .ease(d3.easeCubicOut)
-        .attr('cx', cx).attr('cy', cy)
-        .attr('r', r * 0.6)
-        .transition().duration(250)
-        .attr('opacity', 0).remove();
+        .attr('cx',cx).attr('cy',cy).attr('r',r*0.5)
+        .transition().duration(200).attr('opacity',0).remove();
     }
 
-    // Ball: brief expand then fly to target
-    ball.transition().duration(150)
-      .attr('r', prevR + 8)
-      .transition().duration(dur)
-      .ease(d3.easeBackOut.overshoot(1.1))
-      .attr('cx', cx).attr('cy', cy).attr('r', r);
+    ball.transition().duration(120).attr('r',pr+6)
+      .transition().duration(dur).ease(d3.easeBackOut.overshoot(1.1))
+      .attr('cx',cx).attr('cy',cy).attr('r',r);
 
-    glowRing.transition().duration(dur + 150)
-      .ease(d3.easeBackOut)
-      .attr('cx', cx).attr('cy', cy);
+    glowRing.transition().duration(dur+120).ease(d3.easeBackOut)
+      .attr('cx',cx).attr('cy',cy);
   }
 
   // ═══════════════════════════════════════════════════════════════════
@@ -463,439 +405,314 @@
   // ═══════════════════════════════════════════════════════════════════
 
   const tooltip = d3.select('#tooltip');
-  const tLabel = d3.select('#tLabel');
-  const tValue = d3.select('#tValue');
 
-  function showTooltip(event, label, value) {
-    tLabel.text(label);
-    tValue.text(value);
-    tooltip.style('left', (event.clientX + 16) + 'px')
-      .style('top', (event.clientY - 12) + 'px')
-      .style('opacity', 1);
+  function showTip(ev, label, value) {
+    tooltip.select('.t-label').text(label);
+    tooltip.select('.t-value').text(value);
+    tooltip.style('left',(ev.clientX+14)+'px').style('top',(ev.clientY-10)+'px').style('opacity',1);
   }
-  function hideTooltip() { tooltip.style('opacity', 0); }
+  function hideTip() { tooltip.style('opacity',0); }
 
   // ═══════════════════════════════════════════════════════════════════
-  // PHASE RENDERERS
+  // CLEAR (interrupt + immediate remove — NO setTimeout)
+  // ═══════════════════════════════════════════════════════════════════
+
+  function clearChart() {
+    chartLayer.selectAll('*').interrupt().remove();
+    xAxisG.interrupt().style('opacity',0);
+    yAxisG.interrupt().style('opacity',0);
+    gridG.interrupt().style('opacity',0);
+    xLbl.interrupt().style('opacity',0);
+    yLbl.interrupt().style('opacity',0);
+    chartTitle.interrupt().style('opacity',0);
+    bLabel.interrupt().attr('opacity',0);
+    bSub.interrupt().attr('opacity',0);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // PHASES
   // ═══════════════════════════════════════════════════════════════════
 
   let currentPhase = -1;
 
-  function clearChart(dur = 400) {
-    chartLayer.selectAll('*').transition().duration(dur).attr('opacity', 0).remove();
-    setTimeout(() => chartLayer.selectAll('*').remove(), dur + 50);
-    xAxisG.transition().duration(dur).style('opacity', 0);
-    yAxisG.transition().duration(dur).style('opacity', 0);
-    gridG.transition().duration(dur).style('opacity', 0);
-    xLabel.transition().duration(dur).style('opacity', 0);
-    yLabelEl.transition().duration(dur).style('opacity', 0);
-    chartTitle.transition().duration(dur).style('opacity', 0);
-    ballLabel.transition().duration(dur * 0.5).attr('opacity', 0);
-    ballSublabel.transition().duration(dur * 0.5).attr('opacity', 0);
+  // Phase 0: Ball centered
+  function phase0(dur = 700) {
+    clearChart();
+    flyBall(W/2, heroCy, 28, dur);
   }
 
-  // ── PHASE 0: Ball centered ──
-  function showBall(dur = 800) {
-    clearChart(dur / 2);
-    animateBallTo(W / 2, H / 2, 30, dur);
-    ballLabel.transition().duration(dur).attr('opacity', 0);
-    ballSublabel.transition().duration(dur).attr('opacity', 0);
+  // Phase 1: Lollipop
+  function phase1(dur = 800) {
+    clearChart();
+
+    const x = d3.scaleBand().domain(lollipopData.map(d=>d.name)).range([0,width]).padding(0.35);
+    const y = d3.scaleLinear().domain([0, d3.max(lollipopData,d=>d.value)*1.15]).range([height,0]);
+    const h = lollipopData.find(d=>d.hero);
+    const hx = margin.left + x(h.name) + x.bandwidth()/2;
+    const hy = margin.top + y(h.value);
+
+    flyBall(hx, hy, 11, dur);
+
+    // Labels right of ball
+    bLabel.text(h.value+'K').attr('text-anchor','start');
+    bLabel.transition().delay(dur*0.65).duration(350)
+      .attr('x',hx+20).attr('y',hy+4).attr('opacity',1);
+    bSub.text(h.name+' — Lider').attr('text-anchor','start');
+    bSub.transition().delay(dur*0.7).duration(350)
+      .attr('x',hx+20).attr('y',hy+17).attr('opacity',1);
+
+    // Axes
+    xAxisG.call(d3.axisBottom(x));
+    xAxisG.selectAll('text').attr('transform','rotate(-25)').style('text-anchor','end')
+      .attr('fill', d => d===h.name ? YELLOW : '#555');
+    xAxisG.transition().delay(150).duration(dur).style('opacity',1);
+
+    yAxisG.call(d3.axisLeft(y).ticks(6).tickFormat(d=>d+'K'));
+    yAxisG.transition().delay(150).duration(dur).style('opacity',1);
+
+    gridG.call(d3.axisLeft(y).tickSize(-width).tickFormat('').ticks(6));
+    gridG.transition().delay(150).duration(dur).style('opacity',0.6);
+
+    chartTitle.text('VENTAS POR PRODUCTO');
+    chartTitle.transition().delay(150).duration(dur).style('opacity',1);
+
+    // Hero yellow stick
+    chartLayer.append('line')
+      .attr('x1',x(h.name)+x.bandwidth()/2).attr('x2',x(h.name)+x.bandwidth()/2)
+      .attr('y1',height).attr('y2',height)
+      .attr('stroke',YELLOW).attr('stroke-width',3).attr('stroke-linecap','round').attr('opacity',0.9)
+      .transition().delay(200).duration(dur).ease(d3.easeBackOut)
+      .attr('y2',y(h.value));
+
+    // Gray sticks
+    chartLayer.selectAll('.ls').data(lollipopData.filter(d=>!d.hero))
+      .enter().append('line').attr('class','ls')
+      .attr('x1',d=>x(d.name)+x.bandwidth()/2).attr('x2',d=>x(d.name)+x.bandwidth()/2)
+      .attr('y1',height).attr('y2',height)
+      .attr('stroke',GRAY).attr('stroke-width',2.5).attr('stroke-linecap','round')
+      .attr('opacity',0)
+      .transition().delay((_,i)=>250+i*50).duration(dur)
+      .ease(d3.easeBackOut.overshoot(1.2))
+      .attr('y2',d=>y(d.value)).attr('opacity',0.6);
+
+    // Gray circles
+    chartLayer.selectAll('.lc').data(lollipopData.filter(d=>!d.hero))
+      .enter().append('circle').attr('class','lc')
+      .attr('cx',d=>x(d.name)+x.bandwidth()/2).attr('cy',height).attr('r',0)
+      .attr('fill',GRAY).attr('stroke',BG).attr('stroke-width',2)
+      .style('cursor','pointer')
+      .on('mousemove',function(ev,d){d3.select(this).transition().duration(80).attr('r',8).attr('fill',GRAY_LIGHT);showTip(ev,d.name,d.value+'K');})
+      .on('mouseleave',function(){d3.select(this).transition().duration(80).attr('r',6).attr('fill',GRAY);hideTip();})
+      .transition().delay((_,i)=>250+i*50).duration(dur)
+      .ease(d3.easeBackOut.overshoot(1.3))
+      .attr('cy',d=>y(d.value)).attr('r',6);
+
+    // Gray value labels
+    chartLayer.selectAll('.lv').data(lollipopData.filter(d=>!d.hero))
+      .enter().append('text').attr('class','lv')
+      .attr('x',d=>x(d.name)+x.bandwidth()/2).attr('y',d=>y(d.value)-13)
+      .attr('text-anchor','middle').attr('fill',GRAY_LIGHT).attr('font-size','10px')
+      .attr('font-family','Inter,sans-serif').text(d=>d.value+'K')
+      .attr('opacity',0)
+      .transition().delay(dur+100).duration(350).attr('opacity',0.45);
   }
 
-  // ── PHASE 1: Lollipop ──
-  function showLollipop(dur = 900) {
-    clearChart(250);
+  // Phase 2: Line + Dots
+  function phase2(dur = 800) {
+    clearChart();
 
-    const x = d3.scaleBand()
-      .domain(lollipopData.map(d => d.name))
-      .range([0, width]).padding(0.35);
+    const x = d3.scaleBand().domain(lineData.map(d=>d.month)).range([0,width]).padding(0.05);
+    const y = d3.scaleLinear().domain([0,d3.max(lineData,d=>d.value)*1.15]).range([height,0]);
+    const h = lineData.find(d=>d.hero);
+    const hx = margin.left + x(h.month)+x.bandwidth()/2;
+    const hy = margin.top + y(h.value);
 
-    const y = d3.scaleLinear()
-      .domain([0, d3.max(lollipopData, d => d.value) * 1.15])
-      .range([height, 0]);
+    flyBall(hx, hy, 10, dur);
 
-    const heroD = lollipopData.find(d => d.hero);
-    const heroCx = margin.left + x(heroD.name) + x.bandwidth() / 2;
-    const heroCy = margin.top + y(heroD.value);
+    // Labels left of ball (Nov near right edge)
+    bLabel.text('$'+h.value+'K').attr('text-anchor','end');
+    bLabel.transition().delay(dur*0.7).duration(350)
+      .attr('x',hx-20).attr('y',hy+3).attr('opacity',1);
+    bSub.text('Pico del anio').attr('text-anchor','end');
+    bSub.transition().delay(dur*0.75).duration(350)
+      .attr('x',hx-20).attr('y',hy+16).attr('opacity',1);
 
-    // Ball flies to hero position
-    animateBallTo(heroCx, heroCy, 11, dur);
-
-    // Labels: to the RIGHT of ball
-    ballLabel.text(`${heroD.value}K unidades`)
-      .attr('text-anchor', 'start')
-      .transition().delay(dur * 0.7).duration(400)
-      .attr('x', heroCx + 22).attr('y', heroCy + 4).attr('opacity', 1);
-
-    ballSublabel.text(`${heroD.name} — Lider`)
-      .attr('text-anchor', 'start')
-      .transition().delay(dur * 0.75).duration(400)
-      .attr('x', heroCx + 22).attr('y', heroCy + 18).attr('opacity', 1);
-
-    setTimeout(() => {
-      xAxisG.call(d3.axisBottom(x)).transition().duration(dur).style('opacity', 1);
-      xAxisG.selectAll('text').attr('transform', 'rotate(-25)').style('text-anchor', 'end')
-        .attr('fill', d => d === heroD.name ? YELLOW : '#555');
-
-      yAxisG.call(d3.axisLeft(y).ticks(6).tickFormat(d => d + 'K'))
-        .transition().duration(dur).style('opacity', 1);
-
-      gridG.call(d3.axisLeft(y).tickSize(-width).tickFormat('').ticks(6))
-        .transition().duration(dur).style('opacity', 0.6);
-
-      chartTitle.text('VENTAS POR PRODUCTO')
-        .transition().duration(dur).style('opacity', 1);
-
-      // Gray sticks
-      chartLayer.selectAll('.lollipop-line')
-        .data(lollipopData.filter(d => !d.hero))
-        .enter().append('line').attr('class', 'lollipop-line')
-        .attr('x1', d => x(d.name) + x.bandwidth() / 2)
-        .attr('x2', d => x(d.name) + x.bandwidth() / 2)
-        .attr('y1', height).attr('y2', height)
-        .attr('stroke', GRAY).attr('stroke-width', 2.5)
-        .attr('stroke-linecap', 'round').attr('opacity', 0)
-        .transition().duration(dur).delay((d, i) => i * 55)
-        .ease(d3.easeBackOut.overshoot(1.2))
-        .attr('y2', d => y(d.value)).attr('opacity', 0.6);
-
-      // Gray circles
-      chartLayer.selectAll('.lollipop-circle')
-        .data(lollipopData.filter(d => !d.hero))
-        .enter().append('circle').attr('class', 'lollipop-circle interactive')
-        .attr('cx', d => x(d.name) + x.bandwidth() / 2)
-        .attr('cy', height).attr('r', 0)
-        .attr('fill', GRAY).attr('stroke', BG).attr('stroke-width', 2)
-        .style('cursor', 'pointer')
-        .on('mousemove', function (event, d) {
-          d3.select(this).transition().duration(100).attr('r', 9).attr('fill', GRAY_LIGHT);
-          showTooltip(event, d.name, `${d.value}K unidades`);
-        })
-        .on('mouseleave', function () {
-          d3.select(this).transition().duration(100).attr('r', 6).attr('fill', GRAY);
-          hideTooltip();
-        })
-        .transition().duration(dur).delay((d, i) => i * 55)
-        .ease(d3.easeBackOut.overshoot(1.3))
-        .attr('cy', d => y(d.value)).attr('r', 6);
-
-      // Hero yellow stick
-      chartLayer.append('line')
-        .attr('x1', x(heroD.name) + x.bandwidth() / 2)
-        .attr('x2', x(heroD.name) + x.bandwidth() / 2)
-        .attr('y1', height).attr('y2', height)
-        .attr('stroke', YELLOW).attr('stroke-width', 3)
-        .attr('stroke-linecap', 'round').attr('opacity', 0.9)
-        .transition().duration(dur).ease(d3.easeBackOut)
-        .attr('y2', y(heroD.value));
-
-      // Gray value labels
-      chartLayer.selectAll('.lollipop-val')
-        .data(lollipopData.filter(d => !d.hero))
-        .enter().append('text').attr('class', 'lollipop-val')
-        .attr('x', d => x(d.name) + x.bandwidth() / 2)
-        .attr('y', d => y(d.value) - 14)
-        .attr('text-anchor', 'middle')
-        .attr('fill', GRAY_LIGHT).attr('font-size', '10px')
-        .attr('font-family', 'Inter, sans-serif')
-        .text(d => d.value + 'K')
-        .attr('opacity', 0)
-        .transition().delay(dur + 100).duration(400).attr('opacity', 0.45);
-
-    }, 280);
-  }
-
-  // ── PHASE 2: Line + Dots ──
-  function showLineChart(dur = 900) {
-    clearChart(250);
-
-    const x = d3.scaleBand()
-      .domain(lineData.map(d => d.month))
-      .range([0, width]).padding(0.05);
-
-    const y = d3.scaleLinear()
-      .domain([0, d3.max(lineData, d => d.value) * 1.15])
-      .range([height, 0]);
-
-    const heroD = lineData.find(d => d.hero);
-    const heroCx = margin.left + x(heroD.month) + x.bandwidth() / 2;
-    const heroCy = margin.top + y(heroD.value);
-
-    // Ball flies to Nov
-    animateBallTo(heroCx, heroCy, 10, dur);
-
-    // Labels: to the LEFT (Nov is near right edge)
-    ballLabel.text(`$${heroD.value}K`)
-      .attr('text-anchor', 'end')
-      .transition().delay(dur * 0.8).duration(400)
-      .attr('x', heroCx - 22).attr('y', heroCy + 2).attr('opacity', 1);
-
-    ballSublabel.text('Pico del anio')
-      .attr('text-anchor', 'end')
-      .transition().delay(dur * 0.85).duration(400)
-      .attr('x', heroCx - 22).attr('y', heroCy + 16).attr('opacity', 1);
-
-    const lineGen = d3.line()
-      .x(d => x(d.month) + x.bandwidth() / 2)
-      .y(d => y(d.value))
+    const lineGen = d3.line().x(d=>x(d.month)+x.bandwidth()/2).y(d=>y(d.value))
+      .curve(d3.curveCatmullRom.alpha(0.5));
+    const areaGen = d3.area().x(d=>x(d.month)+x.bandwidth()/2).y0(height).y1(d=>y(d.value))
       .curve(d3.curveCatmullRom.alpha(0.5));
 
-    const areaGen = d3.area()
-      .x(d => x(d.month) + x.bandwidth() / 2)
-      .y0(height).y1(d => y(d.value))
-      .curve(d3.curveCatmullRom.alpha(0.5));
+    xAxisG.call(d3.axisBottom(x));
+    xAxisG.selectAll('text').attr('fill',d=>d===h.month?YELLOW:'#555');
+    xAxisG.transition().delay(150).duration(dur).style('opacity',1);
 
-    setTimeout(() => {
-      xAxisG.call(d3.axisBottom(x)).transition().duration(dur).style('opacity', 1);
-      xAxisG.selectAll('text')
-        .attr('fill', d => d === heroD.month ? YELLOW : '#555');
+    yAxisG.call(d3.axisLeft(y).ticks(6).tickFormat(d=>'$'+d+'K'));
+    yAxisG.transition().delay(150).duration(dur).style('opacity',1);
 
-      yAxisG.call(d3.axisLeft(y).ticks(6).tickFormat(d => '$' + d + 'K'))
-        .transition().duration(dur).style('opacity', 1);
+    gridG.call(d3.axisLeft(y).tickSize(-width).tickFormat('').ticks(6));
+    gridG.transition().delay(150).duration(dur).style('opacity',0.6);
 
-      gridG.call(d3.axisLeft(y).tickSize(-width).tickFormat('').ticks(6))
-        .transition().duration(dur).style('opacity', 0.6);
+    chartTitle.text('INGRESOS MENSUALES 2025');
+    chartTitle.transition().delay(150).duration(dur).style('opacity',1);
 
-      chartTitle.text('INGRESOS MENSUALES 2025')
-        .transition().duration(dur).style('opacity', 1);
+    // Area
+    chartLayer.append('path').datum(lineData)
+      .attr('fill','url(#aGrad)').attr('d',areaGen).attr('opacity',0)
+      .transition().delay(200).duration(dur).attr('opacity',0.8);
 
-      // Area
-      chartLayer.append('path')
-        .datum(lineData).attr('class', 'line-area')
-        .attr('fill', 'url(#lineAreaGrad)').attr('opacity', 0)
-        .attr('d', areaGen)
-        .transition().delay(250).duration(dur).attr('opacity', 0.8);
+    // Line (draw animation)
+    const lp = chartLayer.append('path').datum(lineData)
+      .attr('fill','none').attr('stroke',GRAY).attr('stroke-width',2.5)
+      .attr('stroke-linecap','round').attr('stroke-linejoin','round').attr('d',lineGen);
+    const len = lp.node().getTotalLength();
+    lp.attr('stroke-dasharray',len).attr('stroke-dashoffset',len)
+      .transition().delay(100).duration(dur*1.2).ease(d3.easeCubicInOut)
+      .attr('stroke-dashoffset',0);
 
-      // Gray line
-      const linePath = chartLayer.append('path')
-        .datum(lineData).attr('class', 'line-path')
-        .attr('fill', 'none').attr('stroke', GRAY)
-        .attr('stroke-width', 2.5).attr('stroke-linecap', 'round')
-        .attr('stroke-linejoin', 'round').attr('d', lineGen);
+    // Gray dots
+    chartLayer.selectAll('.ld').data(lineData.filter(d=>!d.hero))
+      .enter().append('circle').attr('class','ld')
+      .attr('cx',d=>x(d.month)+x.bandwidth()/2).attr('cy',d=>y(d.value))
+      .attr('r',0).attr('fill',GRAY).attr('stroke',BG).attr('stroke-width',2)
+      .style('cursor','pointer')
+      .on('mousemove',function(ev,d){d3.select(this).transition().duration(80).attr('r',7).attr('fill',GRAY_LIGHT);showTip(ev,d.month+' 2025','$'+d.value+'K');})
+      .on('mouseleave',function(){d3.select(this).transition().duration(80).attr('r',4).attr('fill',GRAY);hideTip();})
+      .transition().delay((_,i)=>250+i*45).duration(350).ease(d3.easeBackOut).attr('r',4);
 
-      const totalLen = linePath.node().getTotalLength();
-      linePath
-        .attr('stroke-dasharray', totalLen)
-        .attr('stroke-dashoffset', totalLen)
-        .transition().duration(dur * 1.2).delay(120)
-        .ease(d3.easeCubicInOut)
-        .attr('stroke-dashoffset', 0);
-
-      // Gray dots (non-hero)
-      chartLayer.selectAll('.line-dot')
-        .data(lineData.filter(d => !d.hero))
-        .enter().append('circle').attr('class', 'line-dot interactive')
-        .attr('cx', d => x(d.month) + x.bandwidth() / 2)
-        .attr('cy', d => y(d.value))
-        .attr('r', 0).attr('fill', GRAY)
-        .attr('stroke', BG).attr('stroke-width', 2)
-        .style('cursor', 'pointer')
-        .on('mousemove', function (event, d) {
-          d3.select(this).transition().duration(100).attr('r', 7).attr('fill', GRAY_LIGHT);
-          showTooltip(event, d.month + ' 2025', `$${d.value}K`);
-        })
-        .on('mouseleave', function () {
-          d3.select(this).transition().duration(100).attr('r', 4.5).attr('fill', GRAY);
-          hideTooltip();
-        })
-        .transition().duration(400)
-        .delay((d, i) => 300 + i * 50)
-        .ease(d3.easeBackOut)
-        .attr('r', 4.5);
-
-      // Vertical spotlight line at hero position
-      const hx = x(heroD.month) + x.bandwidth() / 2;
-      chartLayer.append('line')
-        .attr('x1', hx).attr('x2', hx)
-        .attr('y1', y(heroD.value) + 12).attr('y2', height)
-        .attr('stroke', YELLOW).attr('stroke-width', 1.5)
-        .attr('stroke-dasharray', '4 4').attr('opacity', 0)
-        .transition().delay(dur + 100).duration(400).attr('opacity', 0.25);
-
-    }, 280);
+    // Vertical spotlight at hero
+    const sx = x(h.month)+x.bandwidth()/2;
+    chartLayer.append('line')
+      .attr('x1',sx).attr('x2',sx).attr('y1',y(h.value)+10).attr('y2',height)
+      .attr('stroke',YELLOW).attr('stroke-width',1.5).attr('stroke-dasharray','4 4')
+      .attr('opacity',0)
+      .transition().delay(dur).duration(350).attr('opacity',0.25);
   }
 
-  // ── PHASE 3: Scatter ──
-  function showScatter(dur = 900) {
-    clearChart(250);
+  // Phase 3: Scatter
+  function phase3(dur = 800) {
+    clearChart();
 
-    const heroD = scatterData.find(d => d.hero);
+    const h = scatterData.find(d=>d.hero);
+    const x = d3.scaleLinear().domain([0,d3.max(scatterData,d=>d.cost)*1.15]).range([0,width]);
+    const y = d3.scaleLinear().domain([0,d3.max(scatterData,d=>d.profit)*1.15]).range([height,0]);
+    const hx = margin.left + x(h.cost);
+    const hy = margin.top + y(h.profit);
 
-    const x = d3.scaleLinear()
-      .domain([0, d3.max(scatterData, d => d.cost) * 1.15])
-      .range([0, width]);
+    flyBall(hx, hy, 13, dur);
 
-    const y = d3.scaleLinear()
-      .domain([0, d3.max(scatterData, d => d.profit) * 1.15])
-      .range([height, 0]);
+    bLabel.text('$'+h.profit+'K beneficio').attr('text-anchor','start');
+    bLabel.transition().delay(dur*0.7).duration(350)
+      .attr('x',hx+22).attr('y',hy+3).attr('opacity',1);
+    bSub.text('Solo $'+h.cost+'K de costo').attr('text-anchor','start');
+    bSub.transition().delay(dur*0.75).duration(350)
+      .attr('x',hx+22).attr('y',hy+16).attr('opacity',1);
 
-    const heroCx = margin.left + x(heroD.cost);
-    const heroCy = margin.top + y(heroD.profit);
+    xAxisG.call(d3.axisBottom(x).ticks(8).tickFormat(d=>'$'+d+'K'));
+    xAxisG.transition().delay(150).duration(dur).style('opacity',1);
 
-    // Ball flies to star project
-    animateBallTo(heroCx, heroCy, 13, dur);
+    yAxisG.call(d3.axisLeft(y).ticks(8).tickFormat(d=>'$'+d+'K'));
+    yAxisG.transition().delay(150).duration(dur).style('opacity',1);
 
-    // Labels: to the RIGHT (hero is on left side)
-    ballLabel.text(`$${heroD.profit}K beneficio`)
-      .attr('text-anchor', 'start')
-      .transition().delay(dur * 0.8).duration(400)
-      .attr('x', heroCx + 24).attr('y', heroCy + 2).attr('opacity', 1);
+    gridG.call(d3.axisLeft(y).tickSize(-width).tickFormat('').ticks(8));
+    gridG.transition().delay(150).duration(dur).style('opacity',0.6);
 
-    ballSublabel.text(`Solo $${heroD.cost}K de costo`)
-      .attr('text-anchor', 'start')
-      .transition().delay(dur * 0.85).duration(400)
-      .attr('x', heroCx + 24).attr('y', heroCy + 16).attr('opacity', 1);
+    chartTitle.text('COSTO VS BENEFICIO POR PROYECTO');
+    chartTitle.transition().delay(150).duration(dur).style('opacity',1);
 
-    setTimeout(() => {
-      xAxisG.call(d3.axisBottom(x).ticks(8).tickFormat(d => '$' + d + 'K'))
-        .transition().duration(dur).style('opacity', 1);
+    xLbl.text('Costo del Proyecto');
+    xLbl.transition().delay(150).duration(dur).style('opacity',1);
+    yLbl.text('Beneficio Generado');
+    yLbl.transition().delay(150).duration(dur).style('opacity',1);
 
-      yAxisG.call(d3.axisLeft(y).ticks(8).tickFormat(d => '$' + d + 'K'))
-        .transition().duration(dur).style('opacity', 1);
+    // Gray dots
+    chartLayer.selectAll('.sd').data(scatterData.filter(d=>!d.hero))
+      .enter().append('circle').attr('class','sd')
+      .attr('cx',width/2).attr('cy',height/2).attr('r',0)
+      .attr('fill',GRAY).attr('opacity',0).attr('stroke',BG).attr('stroke-width',1)
+      .style('cursor','pointer')
+      .on('mousemove',function(ev,d){d3.select(this).transition().duration(80).attr('r',d.size*0.5+2).attr('fill',GRAY_LIGHT);showTip(ev,d.category+' #'+d.id,'Costo: $'+d.cost+'K | Beneficio: $'+d.profit+'K');})
+      .on('mouseleave',function(ev,d){d3.select(this).transition().duration(80).attr('r',d.size*0.4).attr('fill',GRAY);hideTip();})
+      .transition().delay((_,i)=>200+i*18).duration(dur)
+      .ease(d3.easeBackOut.overshoot(1.1))
+      .attr('cx',d=>x(d.cost)).attr('cy',d=>y(d.profit))
+      .attr('r',d=>d.size*0.4).attr('opacity',0.45);
 
-      gridG.call(d3.axisLeft(y).tickSize(-width).tickFormat('').ticks(8))
-        .transition().duration(dur).style('opacity', 0.6);
+    // Crosshairs
+    chartLayer.append('line')
+      .attr('x1',0).attr('x2',x(h.cost)).attr('y1',y(h.profit)).attr('y2',y(h.profit))
+      .attr('stroke',YELLOW).attr('stroke-width',1).attr('stroke-dasharray','4 4')
+      .attr('opacity',0).transition().delay(dur+50).duration(350).attr('opacity',0.2);
 
-      chartTitle.text('COSTO VS BENEFICIO POR PROYECTO')
-        .transition().duration(dur).style('opacity', 1);
+    chartLayer.append('line')
+      .attr('x1',x(h.cost)).attr('x2',x(h.cost)).attr('y1',height).attr('y2',y(h.profit))
+      .attr('stroke',YELLOW).attr('stroke-width',1).attr('stroke-dasharray','4 4')
+      .attr('opacity',0).transition().delay(dur+50).duration(350).attr('opacity',0.2);
 
-      xLabel.text('Costo del Proyecto')
-        .transition().duration(dur).style('opacity', 1);
-      yLabelEl.text('Beneficio Generado')
-        .transition().duration(dur).style('opacity', 1);
+    // Ideal zone
+    chartLayer.append('rect')
+      .attr('x',x(3)).attr('y',y(95))
+      .attr('width',x(38)-x(3)).attr('height',y(58)-y(95))
+      .attr('fill','none').attr('stroke',YELLOW).attr('stroke-width',1)
+      .attr('stroke-dasharray','6 4').attr('rx',8).attr('opacity',0)
+      .transition().delay(dur+150).duration(400).attr('opacity',0.12);
 
-      // Gray dots
-      chartLayer.selectAll('.scatter-dot')
-        .data(scatterData.filter(d => !d.hero))
-        .enter().append('circle').attr('class', 'scatter-dot interactive')
-        .attr('cx', width / 2).attr('cy', height / 2)
-        .attr('r', 0).attr('fill', GRAY)
-        .attr('opacity', 0).attr('stroke', BG).attr('stroke-width', 1)
-        .style('cursor', 'pointer')
-        .on('mousemove', function (event, d) {
-          d3.select(this).transition().duration(100)
-            .attr('r', d.size * 0.5 + 3).attr('fill', GRAY_LIGHT);
-          showTooltip(event, `${d.category} #${d.id}`, `Costo: $${d.cost}K | Beneficio: $${d.profit}K`);
-        })
-        .on('mouseleave', function (event, d) {
-          d3.select(this).transition().duration(100)
-            .attr('r', d.size * 0.4).attr('fill', GRAY);
-          hideTooltip();
-        })
-        .transition().duration(dur)
-        .delay((d, i) => i * 20)
-        .ease(d3.easeBackOut.overshoot(1.1))
-        .attr('cx', d => x(d.cost)).attr('cy', d => y(d.profit))
-        .attr('r', d => d.size * 0.4).attr('opacity', 0.45);
-
-      // Crosshair lines for hero
-      chartLayer.append('line')
-        .attr('x1', 0).attr('x2', x(heroD.cost))
-        .attr('y1', y(heroD.profit)).attr('y2', y(heroD.profit))
-        .attr('stroke', YELLOW).attr('stroke-width', 1)
-        .attr('stroke-dasharray', '4 4').attr('opacity', 0)
-        .transition().delay(dur + 80).duration(400).attr('opacity', 0.25);
-
-      chartLayer.append('line')
-        .attr('x1', x(heroD.cost)).attr('x2', x(heroD.cost))
-        .attr('y1', height).attr('y2', y(heroD.profit))
-        .attr('stroke', YELLOW).attr('stroke-width', 1)
-        .attr('stroke-dasharray', '4 4').attr('opacity', 0)
-        .transition().delay(dur + 80).duration(400).attr('opacity', 0.25);
-
-      // Ideal zone
-      chartLayer.append('rect')
-        .attr('x', x(3)).attr('y', y(95))
-        .attr('width', x(38) - x(3)).attr('height', y(58) - y(95))
-        .attr('fill', 'none').attr('stroke', YELLOW)
-        .attr('stroke-width', 1).attr('stroke-dasharray', '6 4')
-        .attr('rx', 8).attr('opacity', 0)
-        .transition().delay(dur + 200).duration(500).attr('opacity', 0.12);
-
-      chartLayer.append('text')
-        .attr('x', x(22)).attr('y', y(97))
-        .attr('fill', YELLOW).attr('font-size', '10px')
-        .attr('font-family', 'Inter, sans-serif')
-        .attr('font-weight', '600').attr('opacity', 0)
-        .text('ZONA IDEAL')
-        .transition().delay(dur + 350).duration(500).attr('opacity', 0.35);
-
-    }, 280);
+    chartLayer.append('text')
+      .attr('x',x(21)).attr('y',y(97))
+      .attr('fill',YELLOW).attr('font-size','10px').attr('font-family','Inter,sans-serif')
+      .attr('font-weight','600').attr('opacity',0).text('ZONA IDEAL')
+      .transition().delay(dur+250).duration(400).attr('opacity',0.3);
   }
 
   // ═══════════════════════════════════════════════════════════════════
   // SCROLL CONTROLLER
   // ═══════════════════════════════════════════════════════════════════
 
-  const phases = [showBall, showLollipop, showLineChart, showScatter];
-  const phaseElements = [null, '#phase1', '#phase2', '#phase3'];
+  const phaseFns = [phase0, phase1, phase2, phase3];
+  const spaceIds = ['#phase0','#phase1','#phase2','#phase3'];
+  const labelIds = ['#label0','#label1','#label2','#label3'];
   const phaseDots = document.querySelectorAll('.phase-dot');
-  const labelsMap = [null, '#label1', '#label2', '#label3'];
 
-  function getScrollProgress() {
-    const docH = document.documentElement.scrollHeight - window.innerHeight;
-    return Math.min(1, Math.max(0, window.scrollY / docH));
-  }
-
-  function getActivePhase() {
-    const scrollY = window.scrollY;
-    const heroH = document.querySelector('.hero').offsetHeight;
-
-    // Still in hero area
-    if (scrollY < heroH * 0.85) return 0;
-
-    // Check spacers
-    for (let i = 1; i <= 3; i++) {
-      const el = document.querySelector(phaseElements[i]);
+  function getPhase() {
+    for (let i = 3; i >= 0; i--) {
+      const el = document.querySelector(spaceIds[i]);
       if (!el) continue;
       const rect = el.getBoundingClientRect();
-      const trigger = window.innerHeight * 0.45;
-      if (rect.top < trigger && rect.bottom > trigger) return i;
+      if (rect.top < window.innerHeight * 0.55) return i;
     }
-
-    // Past all spacers
-    const last = document.querySelector(phaseElements[3]);
-    if (last && last.getBoundingClientRect().bottom < window.innerHeight * 0.45) return 3;
-
-    return currentPhase >= 0 ? currentPhase : 0;
+    return 0;
   }
 
-  function updateLabels(phase) {
-    labelsMap.forEach((sel, i) => {
-      if (!sel) return;
-      const el = document.querySelector(sel);
-      if (el) el.classList.toggle('visible', i === phase);
+  function updateLabels(p) {
+    labelIds.forEach((id, i) => {
+      const el = document.querySelector(id);
+      if (el) el.classList.toggle('visible', i === p);
     });
   }
 
-  function updatePhaseDots(phase) {
-    phaseDots.forEach((dot, i) => dot.classList.toggle('active', i === phase));
+  function updateDots(p) {
+    phaseDots.forEach((d, i) => d.classList.toggle('active', i === p));
   }
 
-  phaseDots.forEach(dot => {
-    dot.addEventListener('click', () => {
-      const p = parseInt(dot.dataset.phase);
-      if (p === 0) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        const el = document.querySelector(phaseElements[p]);
-        if (el) window.scrollTo({ top: el.offsetTop - window.innerHeight * 0.3, behavior: 'smooth' });
-      }
-    });
-  });
+  phaseDots.forEach(d => d.addEventListener('click', () => {
+    const p = +d.dataset.phase;
+    const el = document.querySelector(spaceIds[p]);
+    if (el) window.scrollTo({ top: el.offsetTop - window.innerHeight * 0.3, behavior: 'smooth' });
+  }));
 
   let ticking = false;
   window.addEventListener('scroll', () => {
     if (!ticking) {
       requestAnimationFrame(() => {
-        document.getElementById('progressFill').style.width = (getScrollProgress() * 100) + '%';
-        const phase = getActivePhase();
-        if (phase !== currentPhase) {
-          currentPhase = phase;
-          phases[phase]();
-          updatePhaseDots(phase);
+        const docH = document.documentElement.scrollHeight - window.innerHeight;
+        document.getElementById('progressFill').style.width = (window.scrollY/docH*100)+'%';
+
+        const p = getPhase();
+        if (p !== currentPhase) {
+          currentPhase = p;
+          phaseFns[p]();
+          updateDots(p);
         }
-        updateLabels(phase);
+        updateLabels(p);
         ticking = false;
       });
       ticking = true;
@@ -905,7 +722,7 @@
   // ═══════════════════════════════════════════════════════════════════
   // INIT
   // ═══════════════════════════════════════════════════════════════════
-  showBall(0);
+  phase0(0);
   </script>
 </body>
 </html>
