@@ -3,726 +3,680 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scroll Animation - D3 Charts</title>
+  <title>Todo empieza con un data point</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
 
     body {
-      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background: #0a0a0a;
-      color: #b0b0b0;
+      color: #888;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* ── Scroll layout ── */
-    .scroll-container { position: relative; }
+    /* ── Yellow Ball ── */
+    #yellow-ball {
+      position: fixed;
+      width: 18px;
+      height: 18px;
+      background: #FFD700;
+      border-radius: 50%;
+      z-index: 1000;
+      pointer-events: none;
+      box-shadow:
+        0 0 15px rgba(255, 215, 0, 0.6),
+        0 0 40px rgba(255, 215, 0, 0.25),
+        0 0 80px rgba(255, 215, 0, 0.1);
+      will-change: transform, left, top;
+    }
 
-    .sticky-wrapper {
-      position: sticky;
-      top: 0;
+    #yellow-ball::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 215, 0, 0.25);
+      transform: translate(-50%, -50%);
+      animation: pulse-ring 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-ring {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.4; }
+      50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+    }
+
+    /* ── Hero ── */
+    .hero {
       height: 100vh;
       display: flex;
-      align-items: center;
+      flex-direction: column;
       justify-content: center;
-      z-index: 10;
-    }
-
-    #viz-container {
-      width: 90%;
-      max-width: 900px;
-      height: 520px;
-    }
-
-    .scroll-spacer {
-      height: 150vh;
+      align-items: center;
+      text-align: center;
+      padding: 0 24px;
       position: relative;
     }
 
-    /* ── Fixed labels at BOTTOM of viewport ── */
-    .fixed-label {
-      position: fixed;
-      bottom: 4vh;
-      left: 50%;
-      transform: translateX(-50%);
-      text-align: center;
-      z-index: 30;
-      opacity: 0;
-      transition: opacity 0.5s ease;
-      pointer-events: none;
-      width: 90%;
-      max-width: 600px;
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
     }
 
-    .fixed-label.visible { opacity: 1; }
+    .hero h1 .accent { color: #FFD700; }
 
-    .fixed-label h2 {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: #c0c0c0;
-      margin-bottom: 6px;
-    }
-
-    .fixed-label h2 .hl { color: #f5c518; }
-
-    .fixed-label p {
-      font-size: 0.95rem;
-      color: #666;
+    .hero .tagline {
+      margin-top: 24px;
+      font-size: clamp(0.95rem, 1.5vw, 1.15rem);
+      color: #555;
+      max-width: 440px;
+      line-height: 1.6;
       font-weight: 300;
-      line-height: 1.5;
     }
 
-    .fixed-label p .y { color: #f5c518; font-weight: 600; }
-
-    /* ── Hero label (centered, bigger) ── */
-    .fixed-label.hero-lbl {
-      bottom: auto;
-      top: 50%;
-      transform: translate(-50%, -50%);
-    }
-
-    .fixed-label.hero-lbl h1 {
-      font-size: 3.5rem;
-      font-weight: 700;
-      color: #e0e0e0;
-      letter-spacing: -1px;
-      margin-bottom: 8px;
-    }
-
-    .fixed-label.hero-lbl h1 .hl { color: #f5c518; }
-
-    .fixed-label.hero-lbl p {
-      font-size: 1.15rem;
-      color: #777;
-    }
-
-    .fixed-label.hero-lbl .scroll-hint {
-      margin-top: 60px;
+    .scroll-hint {
+      position: absolute;
+      bottom: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
       color: #444;
       font-size: 0.75rem;
       letter-spacing: 2px;
       text-transform: uppercase;
-      animation: pulse 2s ease-in-out infinite;
+      animation: float 2s ease-in-out infinite;
     }
 
-    .fixed-label.hero-lbl .scroll-hint .arrow {
-      display: block;
+    .scroll-hint .arrow {
+      width: 1px;
+      height: 30px;
+      background: linear-gradient(to bottom, #444, transparent);
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(8px); }
+    }
+
+    /* ── Text Sections ── */
+    .text-section {
+      padding: 100px 24px;
+      max-width: 700px;
+      margin: 0 auto;
       text-align: center;
-      font-size: 1.2rem;
-      margin-top: 4px;
-      color: #f5c518;
     }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 0.4; transform: translateY(0); }
-      50% { opacity: 1; transform: translateY(6px); }
+    .text-section p {
+      font-size: clamp(1.1rem, 2vw, 1.35rem);
+      line-height: 1.9;
+      color: #4a4a4a;
+      font-weight: 300;
     }
 
-    /* ── Tooltip ── */
-    .tooltip {
-      position: fixed;
-      padding: 12px 18px;
-      background: rgba(15, 15, 15, 0.96);
-      border: 1px solid #f5c518;
-      border-radius: 10px;
-      font-size: 0.82rem;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.15s ease;
-      backdrop-filter: blur(12px);
-      z-index: 100;
-      max-width: 280px;
+    .text-section .hl {
+      color: #FFD700;
+      font-weight: 500;
     }
 
-    .tooltip .t-label { color: #888; margin-bottom: 4px; }
-    .tooltip .t-value { font-size: 1rem; font-weight: 600; color: #f5c518; }
-
-    /* ── Footer ── */
-    .footer {
-      height: 40vh;
+    /* ── Chart Sections ── */
+    .chart-section {
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      position: relative;
-      z-index: 25;
-      background: #0a0a0a;
+      padding: 80px 40px;
+      gap: 60px;
+      max-width: 1100px;
+      margin: 0 auto;
+      min-height: 80vh;
     }
 
-    .footer h2 { font-size: 2rem; font-weight: 700; color: #e0e0e0; margin-bottom: 8px; }
-    .footer h2 .hl { color: #f5c518; }
-    .footer p { color: #555; font-size: 0.9rem; }
+    .chart-section.reverse { flex-direction: row-reverse; }
 
-    /* ── Progress bar ── */
-    .progress-track {
-      position: fixed; top: 0; left: 0; width: 100%; height: 3px;
-      background: #1a1a1a; z-index: 50;
-    }
-    .progress-fill {
-      height: 100%; width: 0%;
-      background: #f5c518; transition: width 0.05s linear;
+    .insight {
+      flex: 0 0 280px;
+      max-width: 300px;
     }
 
-    /* ── Phase indicator ── */
-    .phase-indicator {
-      position: fixed; right: 24px; top: 50%;
-      transform: translateY(-50%);
-      display: flex; flex-direction: column; gap: 12px;
-      z-index: 50;
+    .insight .tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: #FFD700;
+      margin-bottom: 18px;
+      font-weight: 600;
     }
-    .phase-dot {
-      width: 10px; height: 10px; border-radius: 50%;
-      background: #222; border: 1.5px solid #444;
-      transition: all 0.4s ease; cursor: pointer;
-    }
-    .phase-dot.active {
-      background: #f5c518; border-color: #f5c518;
-      box-shadow: 0 0 12px rgba(245, 197, 24, 0.4);
-    }
-    .phase-dot:hover { border-color: #f5c518; }
 
-    /* ── Chart axes ── */
-    .axis path, .axis line { stroke: #2a2a2a; }
-    .axis text { fill: #555; font-size: 11px; font-family: 'Inter', sans-serif; }
-    .grid line { stroke: #1a1a1a; stroke-dasharray: 2 4; }
-    .grid path { stroke: none; }
+    .insight h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #e8e8e8;
+      line-height: 1.3;
+      margin-bottom: 14px;
+    }
+
+    .insight p {
+      font-size: 0.9rem;
+      line-height: 1.75;
+      color: #666;
+      font-weight: 300;
+    }
+
+    .insight .stat {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid #1e1e1e;
+    }
+
+    .insight .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #FFD700;
+    }
+
+    .insight .stat-label {
+      font-size: 0.75rem;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 2px;
+    }
+
+    .chart-box {
+      flex: 1;
+      min-width: 0;
+      max-width: 520px;
+    }
+
+    .chart-box svg {
+      width: 100%;
+      height: auto;
+      overflow: visible;
+    }
+
+    /* ── Contact ── */
+    .contact {
+      max-width: 520px;
+      margin: 100px auto 80px;
+      padding: 0 24px;
+      text-align: center;
+    }
+
+    .contact h2 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #e8e8e8;
+      margin-bottom: 6px;
+    }
+
+    .contact h2 .accent { color: #FFD700; }
+
+    .contact .sub {
+      color: #555;
+      font-size: 0.9rem;
+      margin-bottom: 36px;
+    }
+
+    .form {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      text-align: left;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 14px;
+    }
+
+    .form-row > * { flex: 1; }
+
+    .form input,
+    .form textarea {
+      width: 100%;
+      background: #111;
+      border: 1px solid #222;
+      color: #ddd;
+      padding: 14px 16px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .form input::placeholder,
+    .form textarea::placeholder { color: #444; }
+
+    .form input:focus,
+    .form textarea:focus {
+      border-color: #FFD700;
+      box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.08);
+    }
+
+    .form textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .form button {
+      background: #FFD700;
+      color: #0a0a0a;
+      border: none;
+      padding: 14px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.15s;
+      letter-spacing: 0.02em;
+    }
+
+    .form button:hover {
+      background: #ffe94a;
+      transform: translateY(-1px);
+    }
+
+    .form button:active { transform: translateY(0); }
+
+    footer {
+      text-align: center;
+      padding: 40px 24px;
+      color: #333;
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .chart-section,
+      .chart-section.reverse {
+        flex-direction: column;
+        padding: 60px 24px;
+        gap: 40px;
+      }
+      .insight { flex: none; max-width: 100%; }
+      .chart-box { max-width: 100%; }
+      .text-section { padding: 60px 24px; }
+      .form-row { flex-direction: column; }
+    }
   </style>
 </head>
 <body>
 
-  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <div id="yellow-ball"></div>
 
-  <div class="phase-indicator">
-    <div class="phase-dot active" data-phase="0" title="Inicio"></div>
-    <div class="phase-dot" data-phase="1" title="Lollipop"></div>
-    <div class="phase-dot" data-phase="2" title="Lineas"></div>
-    <div class="phase-dot" data-phase="3" title="Scatter"></div>
-  </div>
+  <main id="page">
 
-  <!-- Fixed labels (shown/hidden by JS) -->
-  <div class="fixed-label hero-lbl visible" id="label0">
-    <h1>Data in <span class="hl">Motion</span></h1>
-    <p>Todo inicia con un <span class="y">data point</span></p>
-    <div class="scroll-hint">scroll para comenzar<span class="arrow">&#8595;</span></div>
-  </div>
+    <!-- HERO -->
+    <section class="hero">
+      <h1>Todo empieza con<br>un <span class="accent">data point</span></h1>
+      <p class="tagline">A veces, un solo punto de datos puede revelar más que mil tablas. Scroll para descubrir la historia.</p>
+      <div class="scroll-hint">
+        <span>Scroll</span>
+        <div class="arrow"></div>
+      </div>
+    </section>
 
-  <div class="fixed-label" id="label1">
-    <h2>Ventas por <span class="hl">Producto</span></h2>
-    <p>La bolita <span class="y">es</span> el Producto C: lider con <span class="y">300K unidades</span>.</p>
-  </div>
+    <!-- TEXT 1 -->
+    <section class="text-section" id="text-1">
+      <p>En un mundo saturado de <span class="hl">información</span>, encontrar la señal correcta entre el ruido lo cambia todo. Un dato puede ser invisible entre miles, o puede ser el que <span class="hl">redefine toda la narrativa</span>.</p>
+    </section>
 
-  <div class="fixed-label" id="label2">
-    <h2>Tendencia <span class="hl">Mensual</span></h2>
-    <p>La bolita viaja a <span class="y">Noviembre</span>, el pico del anio con <span class="y">$91K</span>.</p>
-  </div>
+    <!-- CHART 1: LOLLIPOP — insight left, chart right -->
+    <section class="chart-section" id="section-1">
+      <div class="insight">
+        <span class="tag">Insight 01</span>
+        <h2>Un punto que destaca entre la multitud</h2>
+        <p>Entre múltiples categorías, hay un dato que sobresale. La diferencia no siempre está en el promedio, sino en el outlier que nadie esperaba.</p>
+        <div class="stat">
+          <div class="stat-value">91</div>
+          <div class="stat-label">Producto D — máximo rendimiento</div>
+        </div>
+      </div>
+      <div class="chart-box" id="chart-lollipop"></div>
+    </section>
 
-  <div class="fixed-label" id="label3">
-    <h2>Costo vs <span class="hl">Beneficio</span></h2>
-    <p>La bolita aterriza como el <span class="y">proyecto estrella</span>: bajo costo, alto beneficio.</p>
-  </div>
+    <!-- TEXT 2 -->
+    <section class="text-section" id="text-2">
+      <p>Las <span class="hl">tendencias</span> no se ven a simple vista. Es necesario conectar los puntos para descubrir el <span class="hl">patrón oculto</span> que define el futuro.</p>
+    </section>
 
-  <!-- Scroll container with sticky chart -->
-  <div class="scroll-container">
-    <div class="sticky-wrapper">
-      <div id="viz-container"></div>
-    </div>
+    <!-- CHART 2: LINE+DOTS — chart left, insight right (reverse) -->
+    <section class="chart-section reverse" id="section-2">
+      <div class="insight">
+        <span class="tag">Insight 02</span>
+        <h2>La tendencia revela lo que los números callan</h2>
+        <p>Cada punto cuenta una micro-historia, pero es la línea la que conecta el pasado con el futuro. El dato amarillo marca el momento de inflexión.</p>
+        <div class="stat">
+          <div class="stat-value">+58%</div>
+          <div class="stat-label">Crecimiento en punto de inflexión</div>
+        </div>
+      </div>
+      <div class="chart-box" id="chart-line"></div>
+    </section>
 
-    <div class="scroll-spacer" id="phase0"></div>
-    <div class="scroll-spacer" id="phase1"></div>
-    <div class="scroll-spacer" id="phase2"></div>
-    <div class="scroll-spacer" id="phase3"></div>
-  </div>
+    <!-- TEXT 3 -->
+    <section class="text-section" id="text-3">
+      <p>Cuando cruzamos dos <span class="hl">variables</span>, emergen relaciones invisibles. Los datos dispersos revelan <span class="hl">correlaciones inesperadas</span> y oportunidades ocultas.</p>
+    </section>
 
-  <section class="footer">
-    <h2>Eso es <span class="hl">todo</span>.</h2>
-    <p>Scroll hacia arriba para verlo de nuevo.</p>
-  </section>
+    <!-- CHART 3: SCATTER — insight left, chart right -->
+    <section class="chart-section" id="section-3">
+      <div class="insight">
+        <span class="tag">Insight 03</span>
+        <h2>Los outliers son oportunidades disfrazadas</h2>
+        <p>En una nube de puntos, la mayoría sigue el patrón establecido. Pero el dato que se aleja del grupo puede ser la oportunidad que todos pasan por alto.</p>
+        <div class="stat">
+          <div class="stat-value">1/61</div>
+          <div class="stat-label">Un outlier que cambia la perspectiva</div>
+        </div>
+      </div>
+      <div class="chart-box" id="chart-scatter"></div>
+    </section>
 
-  <div class="tooltip" id="tooltip">
-    <div class="t-label" id="tLabel"></div>
-    <div class="t-value" id="tValue"></div>
-  </div>
+    <!-- CONTACT -->
+    <section class="contact" id="contact">
+      <h2>Hablemos de <span class="accent">datos</span></h2>
+      <p class="sub">¿Tienes un proyecto donde los datos cuentan? Conversemos.</p>
+      <form class="form" onsubmit="event.preventDefault()">
+        <div class="form-row">
+          <input type="text" placeholder="Nombre" required>
+          <input type="email" placeholder="Email" required>
+        </div>
+        <input type="text" placeholder="Asunto">
+        <textarea placeholder="Cuéntanos sobre tu proyecto..."></textarea>
+        <button type="submit">Enviar mensaje</button>
+      </form>
+    </section>
+
+    <footer>Crafted with D3.js — 2026</footer>
+
+  </main>
 
   <script>
-  // ═══════════════════════════════════════════════════════════════════
-  const YELLOW = '#f5c518';
-  const GRAY = '#3a3a3a';
-  const GRAY_LIGHT = '#555';
-  const BG = '#0a0a0a';
+    gsap.registerPlugin(ScrollTrigger);
 
-  // ═══════════════════════════════════════════════════════════════════
-  // DATA
-  // ═══════════════════════════════════════════════════════════════════
+    /* ── Chart helpers ── */
+    const M = { top: 25, right: 25, bottom: 35, left: 45 };
+    const W = 480 - M.left - M.right;
+    const H = 380 - M.top - M.bottom;
+    const YELLOW = "#FFD700";
+    const GRAY_DOT = "#3a3a3a";
+    const GRAY_LINE = "#2a2a2a";
 
-  const lollipopData = [
-    { name: 'Producto A', value: 210, hero: false },
-    { name: 'Producto B', value: 170, hero: false },
-    { name: 'Producto C', value: 300, hero: true },
-    { name: 'Producto D', value: 130, hero: false },
-    { name: 'Producto E', value: 185, hero: false },
-    { name: 'Producto F', value: 95,  hero: false },
-    { name: 'Producto G', value: 245, hero: false },
-    { name: 'Producto H', value: 155, hero: false },
-  ].sort((a, b) => b.value - a.value);
-
-  const lineData = [
-    { month: 'Ene', value: 32, hero: false },
-    { month: 'Feb', value: 45, hero: false },
-    { month: 'Mar', value: 38, hero: false },
-    { month: 'Abr', value: 56, hero: false },
-    { month: 'May', value: 62, hero: false },
-    { month: 'Jun', value: 51, hero: false },
-    { month: 'Jul', value: 74, hero: false },
-    { month: 'Ago', value: 68, hero: false },
-    { month: 'Sep', value: 80, hero: false },
-    { month: 'Oct', value: 72, hero: false },
-    { month: 'Nov', value: 91, hero: true },
-    { month: 'Dic', value: 85, hero: false },
-  ];
-
-  const scatterData = [
-    { id: 0, cost: 18, profit: 82, category: 'Estrella', size: 18, hero: true },
-  ];
-  for (let i = 1; i <= 35; i++) {
-    const cost = 10 + Math.random() * 85;
-    const profit = cost * (0.2 + Math.random() * 0.8) + (Math.random() - 0.5) * 15;
-    const cats = ['Tech', 'Salud', 'Finanzas', 'Retail'];
-    scatterData.push({
-      id: i, cost: +cost.toFixed(1),
-      profit: +Math.max(5, profit).toFixed(1),
-      category: cats[i % 4],
-      size: 4 + Math.random() * 10, hero: false,
-    });
-  }
-
-  // ═══════════════════════════════════════════════════════════════════
-  // SVG
-  // ═══════════════════════════════════════════════════════════════════
-
-  const margin = { top: 40, right: 40, bottom: 50, left: 65 };
-  const W = 900, H = 500;
-  const width = W - margin.left - margin.right;
-  const height = H - margin.top - margin.bottom;
-
-  const svg = d3.select('#viz-container')
-    .append('svg')
-    .attr('viewBox', `0 0 ${W} ${H}`)
-    .attr('preserveAspectRatio', 'xMidYMid meet')
-    .style('width', '100%').style('height', '100%');
-
-  const defs = svg.append('defs');
-
-  const glowFilter = defs.append('filter').attr('id', 'glow')
-    .attr('x', '-50%').attr('y', '-50%').attr('width', '200%').attr('height', '200%');
-  glowFilter.append('feGaussianBlur').attr('stdDeviation', '4').attr('result', 'b');
-  const fm = glowFilter.append('feMerge');
-  fm.append('feMergeNode').attr('in', 'b');
-  fm.append('feMergeNode').attr('in', 'SourceGraphic');
-
-  const areaGrad = defs.append('linearGradient')
-    .attr('id', 'aGrad').attr('x1','0%').attr('y1','0%').attr('x2','0%').attr('y2','100%');
-  areaGrad.append('stop').attr('offset','0%').attr('stop-color',GRAY).attr('stop-opacity',0.18);
-  areaGrad.append('stop').attr('offset','100%').attr('stop-color',GRAY).attr('stop-opacity',0);
-
-  const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
-
-  const gridG = g.append('g').attr('class','grid').style('opacity',0);
-  const xAxisG = g.append('g').attr('class','axis').attr('transform',`translate(0,${height})`).style('opacity',0);
-  const yAxisG = g.append('g').attr('class','axis').style('opacity',0);
-  const chartLayer = g.append('g');
-
-  const xLbl = g.append('text').attr('x',width/2).attr('y',height+45)
-    .attr('text-anchor','middle').attr('fill','#555').attr('font-size','11px').style('opacity',0);
-  const yLbl = g.append('text').attr('transform','rotate(-90)')
-    .attr('x',-height/2).attr('y',-48).attr('text-anchor','middle')
-    .attr('fill','#555').attr('font-size','11px').style('opacity',0);
-
-  const chartTitle = g.append('text').attr('x',width/2).attr('y',-14)
-    .attr('text-anchor','middle').attr('fill',GRAY_LIGHT).attr('font-size','13px')
-    .attr('font-weight','400').attr('font-family','Inter,sans-serif')
-    .attr('letter-spacing','1px').style('opacity',0);
-
-  // ═══════════════════════════════════════════════════════════════════
-  // BALL (on top of everything in SVG)
-  // ═══════════════════════════════════════════════════════════════════
-
-  const ballG = svg.append('g');
-
-  const heroCy = H/2 + 60;  // below hero subtitle text
-
-  const glowRing = ballG.append('circle')
-    .attr('cx',W/2).attr('cy',heroCy).attr('r',28)
-    .attr('fill','none').attr('stroke',YELLOW).attr('stroke-width',2).attr('opacity',0.4);
-
-  const ball = ballG.append('circle')
-    .attr('cx',W/2).attr('cy',heroCy).attr('r',28)
-    .attr('fill',YELLOW).attr('filter','url(#glow)');
-
-  const bLabel = ballG.append('text').attr('fill',YELLOW).attr('font-size','13px')
-    .attr('font-weight','700').attr('font-family','Inter,sans-serif').attr('opacity',0);
-
-  const bSub = ballG.append('text').attr('fill','#999').attr('font-size','10px')
-    .attr('font-weight','400').attr('font-family','Inter,sans-serif').attr('opacity',0);
-
-  let ballR = 28;
-
-  function pulseGlow() {
-    glowRing.attr('r', ballR).attr('opacity', 0.4)
-      .transition().duration(1300).ease(d3.easeSinInOut)
-      .attr('r', ballR + 18).attr('opacity', 0)
-      .on('end', pulseGlow);
-  }
-  pulseGlow();
-
-  // Ball travel with trail
-  function flyBall(cx, cy, r, dur = 800) {
-    const px = +ball.attr('cx'), py = +ball.attr('cy'), pr = +ball.attr('r');
-    ballR = r;
-
-    // Ghost trail
-    for (let i = 1; i <= 3; i++) {
-      ballG.insert('circle',':first-child')
-        .attr('cx',px).attr('cy',py).attr('r',pr*(1-i*0.15))
-        .attr('fill',YELLOW).attr('opacity',0.15/i)
-        .transition().delay(i*30).duration(dur*0.85)
-        .ease(d3.easeCubicOut)
-        .attr('cx',cx).attr('cy',cy).attr('r',r*0.5)
-        .transition().duration(200).attr('opacity',0).remove();
+    function makeSvg(sel) {
+      return d3.select(sel)
+        .append("svg")
+        .attr("viewBox", `0 0 ${W + M.left + M.right} ${H + M.top + M.bottom}`)
+        .append("g")
+        .attr("transform", `translate(${M.left},${M.top})`);
     }
 
-    ball.transition().duration(120).attr('r',pr+6)
-      .transition().duration(dur).ease(d3.easeBackOut.overshoot(1.1))
-      .attr('cx',cx).attr('cy',cy).attr('r',r);
-
-    glowRing.transition().duration(dur+120).ease(d3.easeBackOut)
-      .attr('cx',cx).attr('cy',cy);
-  }
-
-  // ═══════════════════════════════════════════════════════════════════
-  // TOOLTIP
-  // ═══════════════════════════════════════════════════════════════════
-
-  const tooltip = d3.select('#tooltip');
-
-  function showTip(ev, label, value) {
-    tooltip.select('.t-label').text(label);
-    tooltip.select('.t-value').text(value);
-    tooltip.style('left',(ev.clientX+14)+'px').style('top',(ev.clientY-10)+'px').style('opacity',1);
-  }
-  function hideTip() { tooltip.style('opacity',0); }
-
-  // ═══════════════════════════════════════════════════════════════════
-  // CLEAR (interrupt + immediate remove — NO setTimeout)
-  // ═══════════════════════════════════════════════════════════════════
-
-  function clearChart() {
-    chartLayer.selectAll('*').interrupt().remove();
-    xAxisG.interrupt().style('opacity',0);
-    yAxisG.interrupt().style('opacity',0);
-    gridG.interrupt().style('opacity',0);
-    xLbl.interrupt().style('opacity',0);
-    yLbl.interrupt().style('opacity',0);
-    chartTitle.interrupt().style('opacity',0);
-    bLabel.interrupt().attr('opacity',0);
-    bSub.interrupt().attr('opacity',0);
-  }
-
-  // ═══════════════════════════════════════════════════════════════════
-  // PHASES
-  // ═══════════════════════════════════════════════════════════════════
-
-  let currentPhase = -1;
-
-  // Phase 0: Ball centered
-  function phase0(dur = 700) {
-    clearChart();
-    flyBall(W/2, heroCy, 28, dur);
-  }
-
-  // Phase 1: Lollipop
-  function phase1(dur = 800) {
-    clearChart();
-
-    const x = d3.scaleBand().domain(lollipopData.map(d=>d.name)).range([0,width]).padding(0.35);
-    const y = d3.scaleLinear().domain([0, d3.max(lollipopData,d=>d.value)*1.15]).range([height,0]);
-    const h = lollipopData.find(d=>d.hero);
-    const hx = margin.left + x(h.name) + x.bandwidth()/2;
-    const hy = margin.top + y(h.value);
-
-    flyBall(hx, hy, 11, dur);
-
-    // Labels right of ball
-    bLabel.text(h.value+'K').attr('text-anchor','start');
-    bLabel.transition().delay(dur*0.65).duration(350)
-      .attr('x',hx+20).attr('y',hy+4).attr('opacity',1);
-    bSub.text(h.name+' — Lider').attr('text-anchor','start');
-    bSub.transition().delay(dur*0.7).duration(350)
-      .attr('x',hx+20).attr('y',hy+17).attr('opacity',1);
-
-    // Axes
-    xAxisG.call(d3.axisBottom(x));
-    xAxisG.selectAll('text').attr('transform','rotate(-25)').style('text-anchor','end')
-      .attr('fill', d => d===h.name ? YELLOW : '#555');
-    xAxisG.transition().delay(150).duration(dur).style('opacity',1);
-
-    yAxisG.call(d3.axisLeft(y).ticks(6).tickFormat(d=>d+'K'));
-    yAxisG.transition().delay(150).duration(dur).style('opacity',1);
-
-    gridG.call(d3.axisLeft(y).tickSize(-width).tickFormat('').ticks(6));
-    gridG.transition().delay(150).duration(dur).style('opacity',0.6);
-
-    chartTitle.text('VENTAS POR PRODUCTO');
-    chartTitle.transition().delay(150).duration(dur).style('opacity',1);
-
-    // Hero yellow stick
-    chartLayer.append('line')
-      .attr('x1',x(h.name)+x.bandwidth()/2).attr('x2',x(h.name)+x.bandwidth()/2)
-      .attr('y1',height).attr('y2',height)
-      .attr('stroke',YELLOW).attr('stroke-width',3).attr('stroke-linecap','round').attr('opacity',0.9)
-      .transition().delay(200).duration(dur).ease(d3.easeBackOut)
-      .attr('y2',y(h.value));
-
-    // Gray sticks
-    chartLayer.selectAll('.ls').data(lollipopData.filter(d=>!d.hero))
-      .enter().append('line').attr('class','ls')
-      .attr('x1',d=>x(d.name)+x.bandwidth()/2).attr('x2',d=>x(d.name)+x.bandwidth()/2)
-      .attr('y1',height).attr('y2',height)
-      .attr('stroke',GRAY).attr('stroke-width',2.5).attr('stroke-linecap','round')
-      .attr('opacity',0)
-      .transition().delay((_,i)=>250+i*50).duration(dur)
-      .ease(d3.easeBackOut.overshoot(1.2))
-      .attr('y2',d=>y(d.value)).attr('opacity',0.6);
-
-    // Gray circles
-    chartLayer.selectAll('.lc').data(lollipopData.filter(d=>!d.hero))
-      .enter().append('circle').attr('class','lc')
-      .attr('cx',d=>x(d.name)+x.bandwidth()/2).attr('cy',height).attr('r',0)
-      .attr('fill',GRAY).attr('stroke',BG).attr('stroke-width',2)
-      .style('cursor','pointer')
-      .on('mousemove',function(ev,d){d3.select(this).transition().duration(80).attr('r',8).attr('fill',GRAY_LIGHT);showTip(ev,d.name,d.value+'K');})
-      .on('mouseleave',function(){d3.select(this).transition().duration(80).attr('r',6).attr('fill',GRAY);hideTip();})
-      .transition().delay((_,i)=>250+i*50).duration(dur)
-      .ease(d3.easeBackOut.overshoot(1.3))
-      .attr('cy',d=>y(d.value)).attr('r',6);
-
-    // Gray value labels
-    chartLayer.selectAll('.lv').data(lollipopData.filter(d=>!d.hero))
-      .enter().append('text').attr('class','lv')
-      .attr('x',d=>x(d.name)+x.bandwidth()/2).attr('y',d=>y(d.value)-13)
-      .attr('text-anchor','middle').attr('fill',GRAY_LIGHT).attr('font-size','10px')
-      .attr('font-family','Inter,sans-serif').text(d=>d.value+'K')
-      .attr('opacity',0)
-      .transition().delay(dur+100).duration(350).attr('opacity',0.45);
-  }
-
-  // Phase 2: Line + Dots
-  function phase2(dur = 800) {
-    clearChart();
-
-    const x = d3.scaleBand().domain(lineData.map(d=>d.month)).range([0,width]).padding(0.05);
-    const y = d3.scaleLinear().domain([0,d3.max(lineData,d=>d.value)*1.15]).range([height,0]);
-    const h = lineData.find(d=>d.hero);
-    const hx = margin.left + x(h.month)+x.bandwidth()/2;
-    const hy = margin.top + y(h.value);
-
-    flyBall(hx, hy, 10, dur);
-
-    // Labels left of ball (Nov near right edge)
-    bLabel.text('$'+h.value+'K').attr('text-anchor','end');
-    bLabel.transition().delay(dur*0.7).duration(350)
-      .attr('x',hx-20).attr('y',hy+3).attr('opacity',1);
-    bSub.text('Pico del anio').attr('text-anchor','end');
-    bSub.transition().delay(dur*0.75).duration(350)
-      .attr('x',hx-20).attr('y',hy+16).attr('opacity',1);
-
-    const lineGen = d3.line().x(d=>x(d.month)+x.bandwidth()/2).y(d=>y(d.value))
-      .curve(d3.curveCatmullRom.alpha(0.5));
-    const areaGen = d3.area().x(d=>x(d.month)+x.bandwidth()/2).y0(height).y1(d=>y(d.value))
-      .curve(d3.curveCatmullRom.alpha(0.5));
-
-    xAxisG.call(d3.axisBottom(x));
-    xAxisG.selectAll('text').attr('fill',d=>d===h.month?YELLOW:'#555');
-    xAxisG.transition().delay(150).duration(dur).style('opacity',1);
-
-    yAxisG.call(d3.axisLeft(y).ticks(6).tickFormat(d=>'$'+d+'K'));
-    yAxisG.transition().delay(150).duration(dur).style('opacity',1);
-
-    gridG.call(d3.axisLeft(y).tickSize(-width).tickFormat('').ticks(6));
-    gridG.transition().delay(150).duration(dur).style('opacity',0.6);
-
-    chartTitle.text('INGRESOS MENSUALES 2025');
-    chartTitle.transition().delay(150).duration(dur).style('opacity',1);
-
-    // Area
-    chartLayer.append('path').datum(lineData)
-      .attr('fill','url(#aGrad)').attr('d',areaGen).attr('opacity',0)
-      .transition().delay(200).duration(dur).attr('opacity',0.8);
-
-    // Line (draw animation)
-    const lp = chartLayer.append('path').datum(lineData)
-      .attr('fill','none').attr('stroke',GRAY).attr('stroke-width',2.5)
-      .attr('stroke-linecap','round').attr('stroke-linejoin','round').attr('d',lineGen);
-    const len = lp.node().getTotalLength();
-    lp.attr('stroke-dasharray',len).attr('stroke-dashoffset',len)
-      .transition().delay(100).duration(dur*1.2).ease(d3.easeCubicInOut)
-      .attr('stroke-dashoffset',0);
-
-    // Gray dots
-    chartLayer.selectAll('.ld').data(lineData.filter(d=>!d.hero))
-      .enter().append('circle').attr('class','ld')
-      .attr('cx',d=>x(d.month)+x.bandwidth()/2).attr('cy',d=>y(d.value))
-      .attr('r',0).attr('fill',GRAY).attr('stroke',BG).attr('stroke-width',2)
-      .style('cursor','pointer')
-      .on('mousemove',function(ev,d){d3.select(this).transition().duration(80).attr('r',7).attr('fill',GRAY_LIGHT);showTip(ev,d.month+' 2025','$'+d.value+'K');})
-      .on('mouseleave',function(){d3.select(this).transition().duration(80).attr('r',4).attr('fill',GRAY);hideTip();})
-      .transition().delay((_,i)=>250+i*45).duration(350).ease(d3.easeBackOut).attr('r',4);
-
-    // Vertical spotlight at hero
-    const sx = x(h.month)+x.bandwidth()/2;
-    chartLayer.append('line')
-      .attr('x1',sx).attr('x2',sx).attr('y1',y(h.value)+10).attr('y2',height)
-      .attr('stroke',YELLOW).attr('stroke-width',1.5).attr('stroke-dasharray','4 4')
-      .attr('opacity',0)
-      .transition().delay(dur).duration(350).attr('opacity',0.25);
-  }
-
-  // Phase 3: Scatter
-  function phase3(dur = 800) {
-    clearChart();
-
-    const h = scatterData.find(d=>d.hero);
-    const x = d3.scaleLinear().domain([0,d3.max(scatterData,d=>d.cost)*1.15]).range([0,width]);
-    const y = d3.scaleLinear().domain([0,d3.max(scatterData,d=>d.profit)*1.15]).range([height,0]);
-    const hx = margin.left + x(h.cost);
-    const hy = margin.top + y(h.profit);
-
-    flyBall(hx, hy, 13, dur);
-
-    bLabel.text('$'+h.profit+'K beneficio').attr('text-anchor','start');
-    bLabel.transition().delay(dur*0.7).duration(350)
-      .attr('x',hx+22).attr('y',hy+3).attr('opacity',1);
-    bSub.text('Solo $'+h.cost+'K de costo').attr('text-anchor','start');
-    bSub.transition().delay(dur*0.75).duration(350)
-      .attr('x',hx+22).attr('y',hy+16).attr('opacity',1);
-
-    xAxisG.call(d3.axisBottom(x).ticks(8).tickFormat(d=>'$'+d+'K'));
-    xAxisG.transition().delay(150).duration(dur).style('opacity',1);
-
-    yAxisG.call(d3.axisLeft(y).ticks(8).tickFormat(d=>'$'+d+'K'));
-    yAxisG.transition().delay(150).duration(dur).style('opacity',1);
-
-    gridG.call(d3.axisLeft(y).tickSize(-width).tickFormat('').ticks(8));
-    gridG.transition().delay(150).duration(dur).style('opacity',0.6);
-
-    chartTitle.text('COSTO VS BENEFICIO POR PROYECTO');
-    chartTitle.transition().delay(150).duration(dur).style('opacity',1);
-
-    xLbl.text('Costo del Proyecto');
-    xLbl.transition().delay(150).duration(dur).style('opacity',1);
-    yLbl.text('Beneficio Generado');
-    yLbl.transition().delay(150).duration(dur).style('opacity',1);
-
-    // Gray dots
-    chartLayer.selectAll('.sd').data(scatterData.filter(d=>!d.hero))
-      .enter().append('circle').attr('class','sd')
-      .attr('cx',width/2).attr('cy',height/2).attr('r',0)
-      .attr('fill',GRAY).attr('opacity',0).attr('stroke',BG).attr('stroke-width',1)
-      .style('cursor','pointer')
-      .on('mousemove',function(ev,d){d3.select(this).transition().duration(80).attr('r',d.size*0.5+2).attr('fill',GRAY_LIGHT);showTip(ev,d.category+' #'+d.id,'Costo: $'+d.cost+'K | Beneficio: $'+d.profit+'K');})
-      .on('mouseleave',function(ev,d){d3.select(this).transition().duration(80).attr('r',d.size*0.4).attr('fill',GRAY);hideTip();})
-      .transition().delay((_,i)=>200+i*18).duration(dur)
-      .ease(d3.easeBackOut.overshoot(1.1))
-      .attr('cx',d=>x(d.cost)).attr('cy',d=>y(d.profit))
-      .attr('r',d=>d.size*0.4).attr('opacity',0.45);
-
-    // Crosshairs
-    chartLayer.append('line')
-      .attr('x1',0).attr('x2',x(h.cost)).attr('y1',y(h.profit)).attr('y2',y(h.profit))
-      .attr('stroke',YELLOW).attr('stroke-width',1).attr('stroke-dasharray','4 4')
-      .attr('opacity',0).transition().delay(dur+50).duration(350).attr('opacity',0.2);
-
-    chartLayer.append('line')
-      .attr('x1',x(h.cost)).attr('x2',x(h.cost)).attr('y1',height).attr('y2',y(h.profit))
-      .attr('stroke',YELLOW).attr('stroke-width',1).attr('stroke-dasharray','4 4')
-      .attr('opacity',0).transition().delay(dur+50).duration(350).attr('opacity',0.2);
-
-    // Ideal zone
-    chartLayer.append('rect')
-      .attr('x',x(3)).attr('y',y(95))
-      .attr('width',x(38)-x(3)).attr('height',y(58)-y(95))
-      .attr('fill','none').attr('stroke',YELLOW).attr('stroke-width',1)
-      .attr('stroke-dasharray','6 4').attr('rx',8).attr('opacity',0)
-      .transition().delay(dur+150).duration(400).attr('opacity',0.12);
-
-    chartLayer.append('text')
-      .attr('x',x(21)).attr('y',y(97))
-      .attr('fill',YELLOW).attr('font-size','10px').attr('font-family','Inter,sans-serif')
-      .attr('font-weight','600').attr('opacity',0).text('ZONA IDEAL')
-      .transition().delay(dur+250).duration(400).attr('opacity',0.3);
-  }
-
-  // ═══════════════════════════════════════════════════════════════════
-  // SCROLL CONTROLLER
-  // ═══════════════════════════════════════════════════════════════════
-
-  const phaseFns = [phase0, phase1, phase2, phase3];
-  const spaceIds = ['#phase0','#phase1','#phase2','#phase3'];
-  const labelIds = ['#label0','#label1','#label2','#label3'];
-  const phaseDots = document.querySelectorAll('.phase-dot');
-
-  function getPhase() {
-    for (let i = 3; i >= 0; i--) {
-      const el = document.querySelector(spaceIds[i]);
-      if (!el) continue;
-      const rect = el.getBoundingClientRect();
-      if (rect.top < window.innerHeight * 0.55) return i;
+    function styleAxes(svg) {
+      svg.selectAll(".domain").attr("stroke", "#222");
+      svg.selectAll(".tick line").attr("stroke", "#1a1a1a");
+      svg.selectAll(".tick text").attr("fill", "#555").style("font-size", "10px");
     }
-    return 0;
-  }
 
-  function updateLabels(p) {
-    labelIds.forEach((id, i) => {
-      const el = document.querySelector(id);
-      if (el) el.classList.toggle('visible', i === p);
-    });
-  }
+    /* ═══════════════════════════════════════
+       CHART 1 — LOLLIPOP
+    ═══════════════════════════════════════ */
+    (function() {
+      const svg = makeSvg("#chart-lollipop");
+      const data = [
+        { l: "A", v: 45 }, { l: "B", v: 62 }, { l: "C", v: 38 }, { l: "D", v: 91 },
+        { l: "E", v: 55 }, { l: "F", v: 42 }, { l: "G", v: 67 }, { l: "H", v: 50 }
+      ];
 
-  function updateDots(p) {
-    phaseDots.forEach((d, i) => d.classList.toggle('active', i === p));
-  }
+      const x = d3.scaleBand().domain(data.map(d => d.l)).range([0, W]).padding(0.4);
+      const y = d3.scaleLinear().domain([0, 100]).range([H, 0]);
 
-  phaseDots.forEach(d => d.addEventListener('click', () => {
-    const p = +d.dataset.phase;
-    const el = document.querySelector(spaceIds[p]);
-    if (el) window.scrollTo({ top: el.offsetTop - window.innerHeight * 0.3, behavior: 'smooth' });
-  }));
+      svg.append("g").attr("transform", `translate(0,${H})`)
+        .call(d3.axisBottom(x).tickSize(0).tickPadding(10));
+      svg.append("g").call(d3.axisLeft(y).ticks(5).tickSize(-W).tickPadding(8));
+      styleAxes(svg);
 
-  let ticking = false;
-  window.addEventListener('scroll', () => {
-    if (!ticking) {
-      requestAnimationFrame(() => {
-        const docH = document.documentElement.scrollHeight - window.innerHeight;
-        document.getElementById('progressFill').style.width = (window.scrollY/docH*100)+'%';
+      const isY = d => d.l === "D";
 
-        const p = getPhase();
-        if (p !== currentPhase) {
-          currentPhase = p;
-          phaseFns[p]();
-          updateDots(p);
+      svg.selectAll(".stem").data(data).join("line")
+        .attr("x1", d => x(d.l) + x.bandwidth() / 2)
+        .attr("x2", d => x(d.l) + x.bandwidth() / 2)
+        .attr("y1", H).attr("y2", H)
+        .attr("stroke", d => isY(d) ? YELLOW : GRAY_LINE)
+        .attr("stroke-width", 2)
+        .attr("class", "stem");
+
+      svg.selectAll(".dot").data(data).join("circle")
+        .attr("cx", d => x(d.l) + x.bandwidth() / 2)
+        .attr("cy", H)
+        .attr("r", d => isY(d) ? 8 : 5)
+        .attr("fill", d => isY(d) ? YELLOW : GRAY_DOT)
+        .attr("class", "dot");
+
+      svg.selectAll(".glow").data(data.filter(isY)).join("circle")
+        .attr("cx", d => x(d.l) + x.bandwidth() / 2).attr("cy", H)
+        .attr("r", 18).attr("fill", "none")
+        .attr("stroke", YELLOW).attr("stroke-width", 1).attr("opacity", 0)
+        .attr("class", "glow");
+
+      svg.selectAll(".vlabel").data(data.filter(isY)).join("text")
+        .attr("x", d => x(d.l) + x.bandwidth() / 2).attr("y", H)
+        .attr("text-anchor", "middle").attr("dy", "-16")
+        .attr("fill", YELLOW).attr("font-size", "12px").attr("font-weight", "600")
+        .attr("opacity", 0).text(d => d.v).attr("class", "vlabel");
+
+      ScrollTrigger.create({
+        trigger: "#section-1", start: "top 65%", once: true,
+        onEnter: () => {
+          const idx = data.findIndex(isY);
+          svg.selectAll(".stem").transition().duration(700).delay((d, i) => i * 80).attr("y2", d => y(d.v));
+          svg.selectAll(".dot").transition().duration(700).delay((d, i) => i * 80).attr("cy", d => y(d.v));
+          svg.selectAll(".glow").transition().duration(700).delay(idx * 80 + 200).attr("cy", d => y(d.v)).attr("opacity", 0.3);
+          svg.selectAll(".vlabel").transition().duration(700).delay(idx * 80 + 300).attr("y", d => y(d.v)).attr("opacity", 1);
         }
-        updateLabels(p);
-        ticking = false;
       });
-      ticking = true;
-    }
-  });
+    })();
 
-  // ═══════════════════════════════════════════════════════════════════
-  // INIT
-  // ═══════════════════════════════════════════════════════════════════
-  phase0(0);
+    /* ═══════════════════════════════════════
+       CHART 2 — LINE + DOTS
+    ═══════════════════════════════════════ */
+    (function() {
+      const svg = makeSvg("#chart-line");
+      const data = [
+        { m: "Ene", v: 30 }, { m: "Feb", v: 28 }, { m: "Mar", v: 33 },
+        { m: "Abr", v: 35 }, { m: "May", v: 42 }, { m: "Jun", v: 48 },
+        { m: "Jul", v: 76 }, { m: "Ago", v: 71 }, { m: "Sep", v: 80 },
+        { m: "Oct", v: 78 }, { m: "Nov", v: 85 }, { m: "Dic", v: 92 }
+      ];
+
+      const x = d3.scalePoint().domain(data.map(d => d.m)).range([0, W]).padding(0.3);
+      const yS = d3.scaleLinear().domain([0, 100]).range([H, 0]);
+
+      svg.append("g").attr("transform", `translate(0,${H})`)
+        .call(d3.axisBottom(x).tickSize(0).tickPadding(10));
+      svg.append("g").call(d3.axisLeft(yS).ticks(5).tickSize(-W).tickPadding(8));
+      styleAxes(svg);
+
+      const defs = svg.append("defs");
+      const grad = defs.append("linearGradient").attr("id", "areaGrad")
+        .attr("x1", 0).attr("y1", 0).attr("x2", 0).attr("y2", 1);
+      grad.append("stop").attr("offset", "0%").attr("stop-color", YELLOW).attr("stop-opacity", 0.08);
+      grad.append("stop").attr("offset", "100%").attr("stop-color", YELLOW).attr("stop-opacity", 0);
+
+      const area = d3.area().x(d => x(d.m)).y0(H).y1(d => yS(d.v)).curve(d3.curveMonotoneX);
+      const areaPath = svg.append("path").datum(data).attr("fill", "url(#areaGrad)").attr("d", area).attr("opacity", 0);
+
+      const line = d3.line().x(d => x(d.m)).y(d => yS(d.v)).curve(d3.curveMonotoneX);
+      const mainPath = svg.append("path").datum(data)
+        .attr("fill", "none").attr("stroke", GRAY_LINE).attr("stroke-width", 2).attr("d", line);
+
+      const pathLen = mainPath.node().getTotalLength();
+      mainPath.attr("stroke-dasharray", pathLen).attr("stroke-dashoffset", pathLen);
+
+      const hlPath = svg.append("path").datum(data.slice(5, 8))
+        .attr("fill", "none").attr("stroke", YELLOW).attr("stroke-width", 2.5)
+        .attr("d", line).attr("opacity", 0);
+
+      const isY = d => d.m === "Jul";
+
+      svg.selectAll(".dot").data(data).join("circle")
+        .attr("cx", d => x(d.m)).attr("cy", d => yS(d.v))
+        .attr("r", d => isY(d) ? 7 : 3.5)
+        .attr("fill", d => isY(d) ? YELLOW : GRAY_DOT)
+        .attr("opacity", 0).attr("class", "dot");
+
+      svg.selectAll(".glow").data(data.filter(isY)).join("circle")
+        .attr("cx", d => x(d.m)).attr("cy", d => yS(d.v))
+        .attr("r", 16).attr("fill", "none")
+        .attr("stroke", YELLOW).attr("stroke-width", 1).attr("opacity", 0);
+
+      svg.selectAll(".vlabel").data(data.filter(isY)).join("text")
+        .attr("x", d => x(d.m)).attr("y", d => yS(d.v))
+        .attr("text-anchor", "middle").attr("dy", "-14")
+        .attr("fill", YELLOW).attr("font-size", "12px").attr("font-weight", "600")
+        .attr("opacity", 0).text(d => d.v);
+
+      ScrollTrigger.create({
+        trigger: "#section-2", start: "top 65%", once: true,
+        onEnter: () => {
+          mainPath.transition().duration(1200).ease(d3.easeQuadOut).attr("stroke-dashoffset", 0);
+          areaPath.transition().duration(1200).delay(400).attr("opacity", 1);
+          svg.selectAll(".dot").transition().duration(400).delay((d, i) => 100 + i * 80).attr("opacity", 1);
+          hlPath.transition().duration(600).delay(800).attr("opacity", 0.6);
+          svg.selectAll(".glow").transition().duration(600).delay(900).attr("opacity", 0.3);
+          svg.selectAll(".vlabel").transition().duration(400).delay(1000).attr("opacity", 1);
+        }
+      });
+    })();
+
+    /* ═══════════════════════════════════════
+       CHART 3 — SCATTER
+    ═══════════════════════════════════════ */
+    (function() {
+      const svg = makeSvg("#chart-scatter");
+
+      function srand(seed) {
+        let s = seed;
+        return () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
+      }
+      const rng = srand(42);
+
+      const grayData = Array.from({ length: 60 }, () => {
+        const xv = 8 + rng() * 84;
+        const yv = Math.max(5, Math.min(95, xv * 0.65 + (rng() - 0.5) * 28 + 8));
+        return { x: xv, y: yv, yellow: false };
+      });
+      const yellowPt = { x: 20, y: 88, yellow: true };
+      const allData = [...grayData, yellowPt];
+
+      const xS = d3.scaleLinear().domain([0, 100]).range([0, W]);
+      const yS = d3.scaleLinear().domain([0, 100]).range([H, 0]);
+
+      svg.append("g").attr("transform", `translate(0,${H})`)
+        .call(d3.axisBottom(xS).ticks(5).tickSize(0).tickPadding(10));
+      svg.append("g").call(d3.axisLeft(yS).ticks(5).tickSize(-W).tickPadding(8));
+      styleAxes(svg);
+
+      svg.append("line")
+        .attr("x1", xS(5)).attr("y1", yS(5 * 0.65 + 8))
+        .attr("x2", xS(95)).attr("y2", yS(95 * 0.65 + 8))
+        .attr("stroke", "#1e1e1e").attr("stroke-width", 1)
+        .attr("stroke-dasharray", "4,4").attr("opacity", 0).attr("class", "trend");
+
+      svg.selectAll(".dot-gray").data(grayData).join("circle")
+        .attr("cx", d => xS(d.x)).attr("cy", d => yS(d.y))
+        .attr("r", 3.5).attr("fill", GRAY_DOT).attr("opacity", 0).attr("class", "dot-gray");
+
+      svg.selectAll(".dot-yellow").data([yellowPt]).join("circle")
+        .attr("cx", d => xS(d.x)).attr("cy", d => yS(d.y))
+        .attr("r", 8).attr("fill", YELLOW).attr("opacity", 0);
+
+      svg.selectAll(".glow").data([yellowPt]).join("circle")
+        .attr("cx", d => xS(d.x)).attr("cy", d => yS(d.y))
+        .attr("r", 18).attr("fill", "none")
+        .attr("stroke", YELLOW).attr("stroke-width", 1).attr("opacity", 0);
+
+      svg.selectAll(".olabel").data([yellowPt]).join("text")
+        .attr("x", d => xS(d.x) + 14).attr("y", d => yS(d.y) + 4)
+        .attr("fill", YELLOW).attr("font-size", "10px").attr("font-weight", "500")
+        .attr("opacity", 0).text("outlier");
+
+      ScrollTrigger.create({
+        trigger: "#section-3", start: "top 65%", once: true,
+        onEnter: () => {
+          svg.selectAll(".trend").transition().duration(600).attr("opacity", 1);
+          svg.selectAll(".dot-gray").transition().duration(400)
+            .delay(() => Math.random() * 600).attr("opacity", 0.6);
+          svg.selectAll(".dot-yellow").transition().duration(500).delay(700).attr("opacity", 1);
+          svg.selectAll(".glow").transition().duration(500).delay(800).attr("opacity", 0.3);
+          svg.selectAll(".olabel").transition().duration(400).delay(900).attr("opacity", 1);
+        }
+      });
+    })();
+
+    /* ═══════════════════════════════════════
+       YELLOW BALL SCROLL ANIMATION
+    ═══════════════════════════════════════ */
+    const ball = document.getElementById("yellow-ball");
+    gsap.set(ball, { left: "50%", top: "50%", xPercent: -50, yPercent: -50, scale: 1, opacity: 1 });
+
+    const masterTl = gsap.timeline({
+      scrollTrigger: { trigger: "#page", start: "top top", end: "bottom bottom", scrub: 1.2 }
+    });
+
+    masterTl
+      .to(ball, { top: "48%", duration: 1, ease: "none" })
+      .to(ball, { left: "68%", top: "50%", scale: 0.6, duration: 2, ease: "power2.inOut" })
+      .to(ball, { duration: 0.8 })
+      .to(ball, { left: "50%", scale: 1, duration: 1.2, ease: "power2.inOut" })
+      .to(ball, { left: "32%", scale: 0.6, duration: 2, ease: "power2.inOut" })
+      .to(ball, { duration: 0.8 })
+      .to(ball, { left: "50%", scale: 1, duration: 1.2, ease: "power2.inOut" })
+      .to(ball, { left: "68%", scale: 0.6, duration: 2, ease: "power2.inOut" })
+      .to(ball, { duration: 0.8 })
+      .to(ball, { left: "50%", scale: 0.3, opacity: 0, duration: 1.5, ease: "power2.in" });
+
+    /* ═══════════════════════════════════════
+       SECTION ENTRANCE ANIMATIONS
+    ═══════════════════════════════════════ */
+    gsap.utils.toArray(".text-section").forEach(el => {
+      gsap.from(el, {
+        scrollTrigger: { trigger: el, start: "top 85%", toggleActions: "play none none reverse" },
+        opacity: 0, y: 40, duration: 0.8, ease: "power2.out"
+      });
+    });
+
+    gsap.utils.toArray(".chart-section").forEach(section => {
+      const ins = section.querySelector(".insight");
+      const chrt = section.querySelector(".chart-box");
+      const rev = section.classList.contains("reverse");
+
+      gsap.from(ins, {
+        scrollTrigger: { trigger: section, start: "top 75%", toggleActions: "play none none reverse" },
+        opacity: 0, x: rev ? 40 : -40, duration: 0.7, ease: "power2.out"
+      });
+      gsap.from(chrt, {
+        scrollTrigger: { trigger: section, start: "top 75%", toggleActions: "play none none reverse" },
+        opacity: 0, x: rev ? -40 : 40, duration: 0.7, delay: 0.15, ease: "power2.out"
+      });
+    });
+
+    gsap.from(".contact", {
+      scrollTrigger: { trigger: ".contact", start: "top 80%", toggleActions: "play none none reverse" },
+      opacity: 0, y: 40, duration: 0.8, ease: "power2.out"
+    });
   </script>
 </body>
 </html>
